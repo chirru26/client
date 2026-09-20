@@ -10,12 +10,25 @@ import type { Profile, SocialLink, ToastItem, ToastType } from '@/types/portfoli
 
 interface SiteChromeProps { children: ReactNode; profile: Profile; socialLinks: SocialLink[] }
 
+const THEME_KEY='chirru_theme'
+
 export default function SiteChrome({children,profile,socialLinks}:SiteChromeProps){
   const [menuOpen,setMenuOpen]=useState(false)
   const [toasts,setToasts]=useState<ToastItem[]>([])
-  const [theme,setTheme]=useState<'light'|'dark'>(() => typeof window==='undefined' ? 'light' : (localStorage.getItem('chirru_theme') as 'light'|'dark' || 'light'))
+  const [theme,setTheme]=useState<'light'|'dark'>('light')
+  const [themeReady,setThemeReady]=useState(false)
 
-  useEffect(()=>{document.documentElement.setAttribute('data-theme',theme);localStorage.setItem('chirru_theme',theme)},[theme])
+  useEffect(()=>{
+    const stored=localStorage.getItem(THEME_KEY)
+    if(stored==='light'||stored==='dark') setTheme(stored)
+    else if(window.matchMedia('(prefers-color-scheme: dark)').matches) setTheme('dark')
+    setThemeReady(true)
+  },[])
+  useEffect(()=>{
+    if(!themeReady) return
+    document.documentElement.setAttribute('data-theme',theme)
+    localStorage.setItem(THEME_KEY,theme)
+  },[theme,themeReady])
   useEffect(()=>{const handler=(e:KeyboardEvent)=>{if(e.key==='Escape')setMenuOpen(false)};window.addEventListener('keydown',handler);return()=>window.removeEventListener('keydown',handler)},[])
   function showToast(message:string,type:ToastType='info'){const id=Date.now().toString(36)+Math.random().toString(36).slice(2,6);setToasts(prev=>[...prev,{id,message,type}]);window.setTimeout(()=>setToasts(prev=>prev.filter(t=>t.id!==id)),4000)}
   function dismissToast(id:string){setToasts(prev=>prev.filter(t=>t.id!==id))}

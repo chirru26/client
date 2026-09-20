@@ -1,0 +1,11 @@
+@import '../index.css';
+@import '../App.css';
+
+/* Next.js application root. */
+body {
+  min-height: 100vh;
+}
+
+.portfolio-app {
+  min-height: 100vh;
+}

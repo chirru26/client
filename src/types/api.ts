@@ -1,4 +1,5 @@
 import type { ContactFormData, Education, Experience, Profile, Project, Skill, SocialLink } from './portfolio'
+export type { ContactFormData } from './portfolio'
 
 export type JsonRecord = Record<string, unknown>
 

@@ -1,0 +1,160 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+:root {
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  /* Neumorphic Soft-Tech (Light - Default in DESIGN.md) */
+  --bg-app: #faf8ff;
+  --bg-surface: #faf8ff;
+  --bg-surface-dim: #d9d9e3;
+  --bg-surface-bright: #faf8ff;
+  --bg-surface-container: #ededf7;
+  --bg-surface-container-low: #f2f3fd;
+  --bg-surface-container-high: #e7e7f1;
+  --bg-surface-container-highest: #e1e2ec;
+  --bg-surface-container-lowest: #ffffff;
+
+  --text-primary: #191b22;
+  --text-secondary: #595f65;
+  --text-variant: #424653;
+  --text-muted: #737785;
+  --text-inverse: #f0f0fa;
+
+  --primary: #4785FF;
+  --primary-deep: #004097;
+  --primary-container: #0056c6;
+  --on-primary: #ffffff;
+  --primary-subtle: rgba(71, 133, 255, 0.12);
+  --primary-glow: rgba(71, 133, 255, 0.28);
+
+  --secondary: #595f65;
+  --secondary-container: #dde3ea;
+  --tertiary: #7c2a00;
+  --accent-blue: #4785FF;
+  --accent-emerald: #10b981;
+  --accent-amber: #f59e0b;
+  --accent-rose: #ba1a1a;
+
+  --outline: #737785;
+  --outline-variant: #c2c6d6;
+  --border-subtle: rgba(184, 190, 201, 0.4);
+  --border-medium: #c2c6d6;
+
+  /* Neumorphic Shadows (Light Mode) */
+  --shadow-outset: -6px -6px 14px #FFFFFF, 6px 6px 14px #B8BEC9;
+  --shadow-outset-sm: -3px -3px 8px #FFFFFF, 3px 3px 8px #C5CBD6;
+  --shadow-outset-lg: -8px -8px 20px #FFFFFF, 8px 8px 20px #ACB3BE;
+  --shadow-inset: inset 4px 4px 8px #B8BEC9, inset -4px -4px 8px #FFFFFF;
+  --shadow-inset-sm: inset 2px 2px 5px #B8BEC9, inset -2px -2px 5px #FFFFFF;
+  --shadow-glow: 0 0 20px rgba(71, 133, 255, 0.35);
+
+  --radius-sm: 0.25rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-2xl: 1.25rem;
+  --radius-3xl: 1.5rem;
+  --radius-full: 9999px;
+
+  --ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+[data-theme='dark'] {
+  --bg-app: #12141a;
+  --bg-surface: #12141a;
+  --bg-surface-dim: #0d0e13;
+  --bg-surface-bright: #1c1f28;
+  --bg-surface-container: #181b24;
+  --bg-surface-container-low: #141720;
+  --bg-surface-container-high: #202430;
+  --bg-surface-container-highest: #282d3c;
+  --bg-surface-container-lowest: #0c0d12;
+
+  --text-primary: #f0f0fa;
+  --text-secondary: #a1a6b4;
+  --text-variant: #cbd0df;
+  --text-muted: #737785;
+  --text-inverse: #191b22;
+
+  --primary: #4785FF;
+  --primary-deep: #b0c6ff;
+  --primary-container: #0056c6;
+  --on-primary: #ffffff;
+  --primary-subtle: rgba(71, 133, 255, 0.18);
+  --primary-glow: rgba(71, 133, 255, 0.4);
+
+  --secondary: #9aa0a8;
+  --secondary-container: #262a34;
+  --outline: #737785;
+  --outline-variant: #343846;
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-medium: rgba(255, 255, 255, 0.14);
+
+  /* Neumorphic Shadows (Dark Mode) */
+  --shadow-outset: -5px -5px 12px rgba(255, 255, 255, 0.04), 5px 5px 14px rgba(0, 0, 0, 0.75);
+  --shadow-outset-sm: -3px -3px 8px rgba(255, 255, 255, 0.03), 3px 3px 8px rgba(0, 0, 0, 0.65);
+  --shadow-outset-lg: -7px -7px 18px rgba(255, 255, 255, 0.05), 7px 7px 20px rgba(0, 0, 0, 0.85);
+  --shadow-inset: inset 4px 4px 8px rgba(0, 0, 0, 0.7), inset -4px -4px 8px rgba(255, 255, 255, 0.03);
+  --shadow-inset-sm: inset 2px 2px 5px rgba(0, 0, 0, 0.6), inset -2px -2px 5px rgba(255, 255, 255, 0.02);
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body, #root {
+  min-height: 100vh;
+  background-color: var(--bg-app);
+  color: var(--text-primary);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-body);
+  overflow-x: hidden;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+/* Subtle background accentuation */
+.ambient-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.ambient-glow-1 {
+  position: absolute;
+  top: -10%;
+  left: 15%;
+  width: 500px;
+  height: 500px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(71, 133, 255, 0.08) 0%, transparent 70%);
+  filter: blur(50px);
+}
+
+.ambient-glow-2 {
+  position: absolute;
+  bottom: 10%;
+  right: 10%;
+  width: 550px;
+  height: 550px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(71, 133, 255, 0.06) 0%, transparent 70%);
+  filter: blur(60px);
+}

@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /admin/
+Disallow: /portfolio/analytics/
+
+Sitemap: https://www.chirru.in/sitemap.xml

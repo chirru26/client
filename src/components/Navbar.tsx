@@ -18,7 +18,7 @@ interface NavbarProps { onMenu: () => void; theme: 'light' | 'dark'; onToggleThe
 export default function Navbar({ onMenu, theme, onToggleTheme }: NavbarProps) {
   const [activeSection, setActiveSection] = useState('home')
   const [scrolled, setScrolled] = useState(false)
-  const pathname = usePathname()
+  const pathname = usePathname() || '/'
   const router = useRouter()
 
   useEffect(() => {

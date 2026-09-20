@@ -106,7 +106,7 @@
   padding: 0;
 }
 
-html, body, #root {
+html, body {
   min-height: 100vh;
   background-color: var(--bg-app);
   color: var(--text-primary);
@@ -2210,4 +2210,21 @@ body {
 /* Next.js application root */
 .portfolio-app {
   min-height: 100vh;
+}
+
+
+/* Keyboard accessibility */
+:where(a, button, input, textarea, select):focus-visible {
+  outline: 3px solid var(--accent-blue);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
 }

@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
 import { ArrowUpRight, FolderGit2, Github } from 'lucide-react'
@@ -12,9 +13,10 @@ interface ProjectProps { projects?: ProjectType[]; loading?: boolean }
 
 function ProjectCardMedia({ project }: { project: ProjectType }) {
   const [imgError, setImgError] = useState(false)
-  const hasValidImage = Boolean(project.imageUrl && !imgError)
+  const imageUrl = getImageUrl(project.imageUrl)
+  const hasValidImage = Boolean(imageUrl && !imgError)
   return <div className="project-media-wrapper">
-    {hasValidImage ? <img src={getImageUrl(project.imageUrl) || undefined} alt={`Thumbnail preview of ${project.title} project`} className="project-thumbnail" loading="lazy" decoding="async" onError={() => setImgError(true)} /> :
+    {hasValidImage ? <Image src={imageUrl!} alt={`Thumbnail preview of ${project.title} project`} className="project-thumbnail" width={640} height={360} sizes="(max-width: 700px) calc(100vw - 64px), 560px" loading="lazy" onError={() => setImgError(true)} /> :
       <div className="project-fallback-container"><div className="project-fallback-icon-wrap"><FolderGit2 size={28} /></div><span className="project-fallback-title">{project.title}</span></div>}
     {project.featured && <span className="project-featured-badge">Featured</span>}
   </div>
@@ -27,7 +29,7 @@ export default function Project({ projects = [], loading = false }: ProjectProps
 
   return <section id="projects" className="section"><div className="container">
     <div className="section-header"><span className="eyebrow"><FolderGit2 size={14} /> Portfolio Projects</span><h2 className="section-title">Featured <span className="accent-highlight">Projects</span></h2><p className="section-subtitle">Selected software architectures, web applications, and systems built with modern tech stacks.</p></div>
-    <div className="projects-filter-bar"><div className="filter-pills">{filterOptions.map((opt) => <button key={opt.id} className={`filter-pill ${activeFilter === opt.id ? 'active' : ''}`} onClick={() => setActiveFilter(opt.id)}>{opt.label}</button>)}</div><span className="kbd-badge" style={{ padding: '4px 10px' }}>Showing {filteredProjects.length} of {projects.length}</span></div>
+    <div className="projects-filter-bar"><div className="filter-pills">{filterOptions.map((opt) => <button type="button" key={opt.id} className={`filter-pill ${activeFilter === opt.id ? 'active' : ''}`} aria-pressed={activeFilter === opt.id} onClick={() => setActiveFilter(opt.id)}>{opt.label}</button>)}</div><span className="kbd-badge" style={{ padding: '4px 10px' }}>Showing {filteredProjects.length} of {projects.length}</span></div>
     {loading ? <div style={{ padding: '60px 0', textAlign: 'center', color: 'var(--text-muted)' }}>Loading projects...</div> :
       filteredProjects.length === 0 ? <div style={{ padding: '60px 20px', textAlign: 'center', background: 'var(--bg-surface)', borderRadius: 'var(--radius-xl)', border: '1px dashed var(--border-medium)', color: 'var(--text-muted)' }}>Server Offline. Projects Loading failed.</div> :
       <div className="projects-grid">{filteredProjects.map((project, index) => {

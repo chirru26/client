@@ -10,7 +10,7 @@ const navLinks = [{label:'About',href:'#about'},{label:'Projects',href:'#project
 interface Props { open:boolean; onClose:()=>void; theme:'light'|'dark'; onToggleTheme:()=>void; socialLinks?:SocialLink[] }
 
 export default function ResponsiveMenu({open,onClose,theme,onToggleTheme,socialLinks=[]}:Props){
-  const pathname=usePathname(); const router=useRouter()
+  const pathname=usePathname() || '/'; const router=useRouter()
   function handleNavClick(href:string){onClose(); if(pathname==='/') document.querySelector(href)?.scrollIntoView({behavior:'smooth'}); else router.push(`/${href}`)}
   return <AnimatePresence>{open&&<motion.div className="mobile-drawer-overlay" initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} onClick={onClose}><motion.aside className="mobile-drawer" initial={{x:'100%'}} animate={{x:0}} exit={{x:'100%'}} transition={{duration:.28,ease:'easeOut'}} onClick={(e)=>e.stopPropagation()}>
     <div style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}><button type="button" className="nav-brand" onClick={()=>{onClose();pathname==='/'?window.scrollTo({top:0,behavior:'smooth'}):router.push('/')}} style={{background:'none',border:'none',cursor:'pointer',padding:0}}>chirru<span className="nav-brand-dot"/></button><button className="modal-close-btn" onClick={onClose} aria-label="Close menu"><X size={18}/></button></div>

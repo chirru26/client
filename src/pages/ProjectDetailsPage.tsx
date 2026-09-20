@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { ArrowLeft, ArrowUpRight, Github, FolderGit2, Code2, Layers } from 'lucide-react'
 import { motion } from 'framer-motion'
-import { findProjectBySlug, toProjectSlug } from '@/utils/slugUtils'
+import { findProjectBySlug } from '@/utils/slugUtils'
 import { getImageUrl } from '@/utils/imageUtils'
 import type { Project } from '@/types/portfolio'
 

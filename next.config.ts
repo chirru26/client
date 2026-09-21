@@ -16,10 +16,12 @@ function imagePatternFromApiUrl(raw?: string) {
   }
 }
 
+const PROD_IMAGE_HOST = { protocol: 'https' as const, hostname: 'api.chirru.in', pathname: '/api/v2/images' }
+
 const remotePatterns = [
+  PROD_IMAGE_HOST,
   imagePatternFromApiUrl(process.env.NEXT_PUBLIC_API_URL),
   imagePatternFromApiUrl(process.env.API_URL),
-  imagePatternFromApiUrl('https://api.chirru.in/api/v2'),
 ].filter((pattern, index, all): pattern is NonNullable<typeof pattern> => {
   if (!pattern) return false
   return all.findIndex((other) => JSON.stringify(other) === JSON.stringify(pattern)) === index
@@ -28,6 +30,8 @@ const remotePatterns = [
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
+  // Allow the local network IP to access HMR dev resources (cross-origin blocked by default in Next.js 16+)
+  allowedDevOrigins: ['172.23.0.1'],
   images: {
     // Next.js 16 blocks optimizer fetches to private IPs (SSRF). Allow only in local dev.
     dangerouslyAllowLocalIP: process.env.NODE_ENV !== 'production',

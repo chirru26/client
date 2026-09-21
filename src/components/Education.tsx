@@ -1,15 +1,15 @@
 'use client'
 
-import { motion } from 'framer-motion'
-import { GraduationCap, Calendar, Landmark, BookOpen, Sparkles } from 'lucide-react'
 import type { Education as EducationType } from '@/types/portfolio'
+import { motion } from 'framer-motion'
+import { BookOpen, Calendar, GraduationCap, Landmark } from 'lucide-react'
 
 interface EducationProps { items?: EducationType[] }
 
 export default function Education({ items = [] }: EducationProps) {
   return <section id="education" className="section"><div className="container">
     <div className="section-header"><span className="eyebrow"><GraduationCap size={14} /> Academic Journey</span><h2 className="section-title">Formal <span className="accent-highlight">Education</span></h2><p className="section-subtitle">Academic background, degrees, and foundational engineering education.</p></div>
-    {items.length === 0 ? <motion.div initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="edu-empty-card"><div className="edu-empty-icon"><Sparkles size={22} /></div><h3 className="edu-empty-title">Education History</h3><p className="edu-empty-subtitle">Academic qualifications will appear here once configured in the CMS.</p></motion.div> :
+    {items.length === 0 ? <motion.div initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="edu-empty-card"><h3 className="edu-empty-title">Education History</h3><p className="edu-empty-subtitle">Academic qualifications will appear here once configured in the Dashboard.</p></motion.div> :
       <div className="edu-grid">{items.map((item, index) => {
         let field = item.field || ''
         if (field.toLowerCase().includes('computer science')) field = 'Computer Science & Engineering'

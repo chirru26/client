@@ -1,9 +1,6 @@
 import type { ContactFormData, ContactResponse } from '@/types/api'
 
-const API_URL = (
-  process.env.NEXT_PUBLIC_API_URL ||
-  'https://api.chirru.in/api/v2'
-).replace(/\/$/, '')
+const API_URL = (process.env.NEXT_PUBLIC_API_URL ?? '').replace(/\/$/, '')
 
 interface RequestOptions extends RequestInit {
   body?: BodyInit | null

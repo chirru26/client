@@ -13,16 +13,38 @@ const API_URL = (
   'https://api.chirru.in/api/v2'
 ).replace(/\/$/, '')
 
+const PROD_API_URL = 'https://api.chirru.in/api/v2'
+
 async function get<T>(path: string, fallback: T): Promise<T> {
   try {
     const response = await fetch(`${API_URL}${path}`, {
-      next: { revalidate: 60 },
+      next: { revalidate: 3600 },
       headers: { Accept: 'application/json' },
     })
 
-    if (!response.ok) return fallback
+    if (!response.ok) {
+      if (API_URL !== PROD_API_URL) {
+        const prodRes = await fetch(`${PROD_API_URL}${path}`, {
+          next: { revalidate: 3600 },
+          headers: { Accept: 'application/json' },
+        }).catch(() => null)
+        if (prodRes && prodRes.ok) return (await prodRes.json()) as T
+      }
+      return fallback
+    }
     return (await response.json()) as T
   } catch {
+    if (API_URL !== PROD_API_URL) {
+      try {
+        const prodRes = await fetch(`${PROD_API_URL}${path}`, {
+          next: { revalidate: 3600 },
+          headers: { Accept: 'application/json' },
+        })
+        if (prodRes.ok) return (await prodRes.json()) as T
+      } catch {
+        return fallback
+      }
+    }
     return fallback
   }
 }

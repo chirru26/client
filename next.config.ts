@@ -3,23 +3,23 @@ import type { NextConfig } from 'next'
 function imagePatternFromApiUrl(raw?: string) {
   if (!raw?.trim()) return null
   try {
-    const url = new URL(raw.includes('://') ? raw : `https://${raw}`)
+    const url = new URL(raw.includes('://') ? raw : 'https://' + raw)
     const apiPath = url.pathname.replace(/\/$/, '') || '/api/v2'
     return {
       protocol: url.protocol.replace(':', '') as 'http' | 'https',
       hostname: url.hostname,
       ...(url.port ? { port: url.port } : {}),
-      pathname: `${apiPath}/images`,
+      pathname: apiPath + '/media/**',
     }
   } catch {
     return null
   }
 }
 
-const PROD_IMAGE_HOST = { protocol: 'https' as const, hostname: 'api.chirru.in', pathname: '/api/v2/images' }
+const PROD_MEDIA_HOST = { protocol: 'https' as const, hostname: 'api.chirru.in', pathname: '/api/v2/media/**' }
 
 const remotePatterns = [
-  PROD_IMAGE_HOST,
+  PROD_MEDIA_HOST,
   imagePatternFromApiUrl(process.env.NEXT_PUBLIC_API_URL),
   imagePatternFromApiUrl(process.env.API_URL),
 ].filter((pattern, index, all): pattern is NonNullable<typeof pattern> => {

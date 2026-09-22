@@ -10,41 +10,28 @@ import type {
 const API_URL = (
   process.env.API_URL ||
   process.env.NEXT_PUBLIC_API_URL ||
-  'https://api.chirru.in/api/v2'
+  'http://127.0.0.1:8080/api/v2'
 ).replace(/\/$/, '')
 
-const PROD_API_URL = 'https://api.chirru.in/api/v2'
-
 async function get<T>(path: string, fallback: T): Promise<T> {
+  const url = `${API_URL}${path}`
+
   try {
-    const response = await fetch(`${API_URL}${path}`, {
-      next: { revalidate: 3600 },
+    const response = await fetch(url, {
+      cache: 'no-store',
       headers: { Accept: 'application/json' },
     })
 
     if (!response.ok) {
-      if (API_URL !== PROD_API_URL) {
-        const prodRes = await fetch(`${PROD_API_URL}${path}`, {
-          next: { revalidate: 3600 },
-          headers: { Accept: 'application/json' },
-        }).catch(() => null)
-        if (prodRes && prodRes.ok) return (await prodRes.json()) as T
-      }
+      console.error(
+        `[serverApi] ${response.status} ${response.statusText}: ${url}`
+      )
       return fallback
     }
+
     return (await response.json()) as T
-  } catch {
-    if (API_URL !== PROD_API_URL) {
-      try {
-        const prodRes = await fetch(`${PROD_API_URL}${path}`, {
-          next: { revalidate: 3600 },
-          headers: { Accept: 'application/json' },
-        })
-        if (prodRes.ok) return (await prodRes.json()) as T
-      } catch {
-        return fallback
-      }
-    }
+  } catch (error) {
+    console.error(`[serverApi] Failed to fetch ${url}`, error)
     return fallback
   }
 }

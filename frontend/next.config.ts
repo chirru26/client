@@ -16,11 +16,13 @@ function imagePatternFromApiUrl(raw?: string) {
   }
 }
 
-const CLOUDINARY_HOST = { protocol: 'https' as const, hostname: 'res.cloudinary.com', pathname: '/**' }
-const PROD_MEDIA_HOST = { protocol: 'https' as const, hostname: 'api.chirru.in', pathname: '/api/v2/media/**' }
+const PROD_MEDIA_HOST = {
+  protocol: 'https' as const,
+  hostname: 'api.chirru.in',
+  pathname: '/api/v2/media/**',
+}
 
 const remotePatterns = [
-  CLOUDINARY_HOST,
   PROD_MEDIA_HOST,
   imagePatternFromApiUrl(process.env.NEXT_PUBLIC_API_URL),
   imagePatternFromApiUrl(process.env.API_URL),
@@ -29,35 +31,56 @@ const remotePatterns = [
   return all.findIndex((other) => JSON.stringify(other) === JSON.stringify(pattern)) === index
 })
 
+const productionSecurityHeaders = [
+  {
+    key: 'Content-Security-Policy',
+    value: [
+      "default-src 'self'",
+      "base-uri 'self'",
+      "object-src 'none'",
+      "frame-ancestors 'self'",
+      "form-action 'self'",
+      "script-src 'self' 'unsafe-inline'",
+      "style-src 'self' 'unsafe-inline'",
+      "img-src 'self' data: blob: https://api.chirru.in",
+      "font-src 'self' data:",
+      "connect-src 'self' https://api.chirru.in",
+      "media-src 'self' https://api.chirru.in",
+      "worker-src 'self' blob:",
+      "manifest-src 'self'",
+      "upgrade-insecure-requests",
+    ].join('; '),
+  },
+  {
+    key: 'Strict-Transport-Security',
+    value: 'max-age=31536000; includeSubDomains',
+  },
+]
+
+const baseSecurityHeaders = [
+  { key: 'X-Content-Type-Options', value: 'nosniff' },
+  { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+  { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
+  {
+    key: 'Permissions-Policy',
+    value: 'camera=(), microphone=(), geolocation=(), payment=()',
+  },
+]
+
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
-  // Allow the local network IP to access HMR dev resources (cross-origin blocked by default in Next.js 16+)
   allowedDevOrigins: ['172.23.0.1'],
   images: {
-    // Next.js 16 blocks optimizer fetches to private IPs (SSRF). Allow only in local dev.
     dangerouslyAllowLocalIP: process.env.NODE_ENV !== 'production',
     remotePatterns,
   },
   async headers() {
-    return [
-      {
-        source: '/(.*)',
-        headers: [
-          { key: 'X-Content-Type-Options', value: 'nosniff' },
-          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
-          { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
-          {
-            key: 'Permissions-Policy',
-            value: 'camera=(), microphone=(), geolocation=(), payment=()',
-          },
-          {
-            key: 'Strict-Transport-Security',
-            value: 'max-age=31536000; includeSubDomains',
-          },
-        ],
-      },
-    ]
+    const headers = process.env.NODE_ENV === 'production'
+      ? [...baseSecurityHeaders, ...productionSecurityHeaders]
+      : baseSecurityHeaders
+
+    return [{ source: '/(.*)', headers }]
   },
 }
 

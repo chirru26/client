@@ -6,6 +6,7 @@ import { motion } from 'framer-motion'
 import { ArrowUpRight, FolderGit2, Github } from 'lucide-react'
 import Link from 'next/link'
 import { getImageUrl } from '@/utils/imageUtils'
+import { getSafeExternalUrl } from '@/utils/externalUrl'
 import { toProjectSlug } from '@/utils/slugUtils'
 import type { Project as ProjectType } from '@/types/portfolio'
 
@@ -34,11 +35,13 @@ export default function Project({ projects = [], loading = false }: ProjectProps
       filteredProjects.length === 0 ? <div style={{ padding: '60px 20px', textAlign: 'center', background: 'var(--bg-surface)', borderRadius: 'var(--radius-xl)', border: '1px dashed var(--border-medium)', color: 'var(--text-secondary)' }}><FolderGit2 size={32} style={{ margin: '0 auto 12px', opacity: 0.5 }} /><div>No projects published yet. Check back soon!</div></div> :
       <div className="projects-grid">{filteredProjects.map((project, index) => {
         const desc = !project.description || project.description.length < 6 || project.description === 'dfsb' ? 'A modern full-stack web application developed with Java, Spring Boot, and reactive frontend architecture.' : project.description
+        const liveUrl = getSafeExternalUrl(project.liveUrl)
+        const githubUrl = getSafeExternalUrl(project.githubUrl)
         return <motion.article key={project.id || project.slug || index} className="project-card" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.35, delay: index * 0.06 }}>
           <ProjectCardMedia project={project} />
           <div className="project-card-body"><h3 className="project-card-title"><Link href={`/projects/${toProjectSlug(project.title)}`} style={{ color: 'inherit', textDecoration: 'none' }}>{project.title}</Link></h3><p className="project-card-desc">{desc}</p>
             {project.skills && project.skills.length > 0 && <div className="project-tech-tags">{project.skills.map((skill) => <span className="tech-chip" key={skill.id || skill.name}>{skill.name}</span>)}</div>}
-            <div className="project-card-footer"><div className="project-action-links"><Link href={`/projects/${toProjectSlug(project.title)}`} className="project-action-link"><FolderGit2 size={15} /> Details</Link>{project.liveUrl && <a href={project.liveUrl} target="_blank" rel="noreferrer" className="project-action-link"><ArrowUpRight size={15} /> Live Demo</a>}{project.githubUrl && <a href={project.githubUrl} target="_blank" rel="noreferrer" className="project-action-link"><Github size={15} /> Code</a>}</div></div>
+            <div className="project-card-footer"><div className="project-action-links"><Link href={`/projects/${toProjectSlug(project.title)}`} className="project-action-link"><FolderGit2 size={15} /> Details</Link>{liveUrl && <a href={liveUrl} target="_blank" rel="noreferrer" className="project-action-link"><ArrowUpRight size={15} /> Live Demo</a>}{githubUrl && <a href={githubUrl} target="_blank" rel="noreferrer" className="project-action-link"><Github size={15} /> Code</a>}</div></div>
           </div>
         </motion.article>
       })}</div>}

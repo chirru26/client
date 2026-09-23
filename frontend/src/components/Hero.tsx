@@ -4,6 +4,7 @@ import { motion } from 'framer-motion'
 import { ArrowUpRight, Code2, FileText, Github, Globe, Linkedin, Instagram, Mail, MapPin, Send, User } from 'lucide-react'
 import { portfolioApi } from '@/api'
 import { getImageUrl } from '@/utils/imageUtils'
+import { getSafeExternalUrl, getSafeMailto } from '@/utils/externalUrl'
 import type { Profile, SocialLink } from '@/types/portfolio'
 
 interface HeroProps {
@@ -27,6 +28,11 @@ export default function Hero({ profile = {}, socialLinks = [], projectCount = 0,
     return p === 'twitter' || p === 'x' || u.includes('x.com') || u.includes('twitter.com')
   })?.url || profile.twitterUrl || profile.xUrl
   const email = profile.email
+  const safeGithub = getSafeExternalUrl(github)
+  const safeLinkedin = getSafeExternalUrl(linkedin)
+  const safeInstagram = getSafeExternalUrl(instagram)
+  const safeXLink = getSafeExternalUrl(xLink)
+  const safeEmail = getSafeMailto(email)
 
   // Clean headline if default is informal
   const headline = profile.headline || 'Aspiring Java & Backend Software Engineer'
@@ -99,30 +105,30 @@ export default function Hero({ profile = {}, socialLinks = [], projectCount = 0,
               </div>
 
               <div className="hero-socials hero-landscape-socials">
-                {github && (
-                  <a href={github} target="_blank" rel="noreferrer" className="social-icon-btn" aria-label="GitHub">
+                {safeGithub && (
+                  <a href={safeGithub!} target="_blank" rel="noreferrer" className="social-icon-btn" aria-label="GitHub">
                     <Github size={18} />
                   </a>
                 )}
-                {linkedin && (
-                  <a href={linkedin} target="_blank" rel="noreferrer" className="social-icon-btn" aria-label="LinkedIn">
+                {safeLinkedin && (
+                  <a href={safeLinkedin!} target="_blank" rel="noreferrer" className="social-icon-btn" aria-label="LinkedIn">
                     <Linkedin size={18} />
                   </a>
                 )}
-                {xLink && (
-                  <a href={xLink} target="_blank" rel="noreferrer" className="social-icon-btn" aria-label="X (Twitter)">
+                {safeXLink && (
+                  <a href={safeXLink!} target="_blank" rel="noreferrer" className="social-icon-btn" aria-label="X (Twitter)">
                     <svg viewBox="0 0 24 24" width={16} height={16} fill="currentColor">
                       <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
                     </svg>
                   </a>
                 )}
-                {instagram && (
-                  <a href={instagram} target="_blank" rel="noreferrer" className="social-icon-btn" aria-label="Instagram">
+                {safeInstagram && (
+                  <a href={safeInstagram!} target="_blank" rel="noreferrer" className="social-icon-btn" aria-label="Instagram">
                     <Instagram size={18} />
                   </a>
                 )}
-                {email && (
-                  <a href={`mailto:${email}`} className="social-icon-btn" aria-label="Email">
+                {safeEmail && (
+                  <a href={safeEmail!} className="social-icon-btn" aria-label="Email">
                     <Mail size={18} />
                   </a>
                 )}
@@ -135,7 +141,7 @@ export default function Hero({ profile = {}, socialLinks = [], projectCount = 0,
                   .map((s) => (
                     <a
                       key={s.id || s.url}
-                      href={s.url}
+                      href={getSafeExternalUrl(s.url) || undefined}
                       target="_blank"
                       rel="noreferrer"
                       className="social-icon-btn"

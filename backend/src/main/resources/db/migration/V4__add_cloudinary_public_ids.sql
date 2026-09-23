@@ -1,0 +1,4 @@
+ALTER TABLE profile ADD COLUMN IF NOT EXISTS image_public_id VARCHAR(500);
+ALTER TABLE profile ADD COLUMN IF NOT EXISTS resume_public_id VARCHAR(500);
+ALTER TABLE projects ADD COLUMN IF NOT EXISTS image_public_id VARCHAR(500);
+ALTER TABLE certifications ADD COLUMN IF NOT EXISTS image_public_id VARCHAR(500);

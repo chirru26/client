@@ -16,9 +16,11 @@ function imagePatternFromApiUrl(raw?: string) {
   }
 }
 
+const CLOUDINARY_HOST = { protocol: 'https' as const, hostname: 'res.cloudinary.com', pathname: '/**' }
 const PROD_MEDIA_HOST = { protocol: 'https' as const, hostname: 'api.chirru.in', pathname: '/api/v2/media/**' }
 
 const remotePatterns = [
+  CLOUDINARY_HOST,
   PROD_MEDIA_HOST,
   imagePatternFromApiUrl(process.env.NEXT_PUBLIC_API_URL),
   imagePatternFromApiUrl(process.env.API_URL),

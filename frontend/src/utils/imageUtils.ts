@@ -20,6 +20,10 @@ export function getImageUrl(mediaUrl?: string | null): string | null {
   const trimmed = mediaUrl.trim()
   if (!trimmed || trimmed.startsWith('data:') || trimmed.startsWith('blob:')) return null
 
+  if (trimmed.startsWith('https://res.cloudinary.com/')) {
+    return trimmed
+  }
+
   try {
     const resolved = new URL(trimmed, API_BASE_URL + '/')
 

@@ -308,6 +308,26 @@ For production, use the hosting provider's secret/environment-variable manager i
 
 ---
 
+# Docker PostgreSQL
+
+A Docker Compose PostgreSQL service is included at the repository root for local development.
+
+Start PostgreSQL from the repository root:
+
+```bash
+docker compose up -d postgres
+```
+
+Then configure `backend/.env` with:
+
+```env
+DB_URL=jdbc:postgresql://localhost:5432/chirru_portfolio
+DB_USERNAME=chirru
+DB_PASSWORD=change-me-local
+```
+
+Full setup, verification, reset, and troubleshooting instructions are available in [`DOCKER_POSTGRES_GUIDE.md`](./DOCKER_POSTGRES_GUIDE.md).
+
 # Database
 
 PostgreSQL is the primary persistent store.

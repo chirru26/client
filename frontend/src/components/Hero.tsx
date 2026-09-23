@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { motion } from 'framer-motion'
 import { ArrowUpRight, Code2, FileText, Github, Globe, Linkedin, Instagram, Mail, MapPin, Send, User } from 'lucide-react'
 import { portfolioApi } from '@/api'
@@ -60,13 +61,14 @@ export default function Hero({ profile = {}, socialLinks = [], projectCount = 0,
             <div className="hero-landscape-profile">
               <div className="avatar-wrapper hero-avatar-landscape">
                 {profile.imageUrl ? (
-                  <img
+                  <Image
                     src={getImageUrl(profile.imageUrl) || ''}
                     alt={`${profile.name || 'Chiranjit Das'} - Java & Backend Software Engineer`}
                     className="avatar-img"
-                    loading="eager"
-                    fetchPriority="high"
-                    decoding="async"
+                    width={160}
+                    height={160}
+                    sizes="160px"
+                    priority
                   />
                 ) : (
                   <div className="avatar-fallback"><User size={60} /></div>

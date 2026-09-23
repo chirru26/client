@@ -1,9 +1,12 @@
+import dynamic from 'next/dynamic'
 import Hero from '@/components/Hero'
-import About from '@/components/About'
-import Project from '@/components/Project'
-import Internship from '@/components/Internship'
-import Education from '@/components/Education'
-import Contact from '@/components/Contact'
+
+const DeferredSection = () => <section className="section" aria-hidden="true" style={{ minHeight: 320 }} />
+const About = dynamic(() => import('@/components/About'), { loading: DeferredSection })
+const Project = dynamic(() => import('@/components/Project'), { loading: DeferredSection })
+const Internship = dynamic(() => import('@/components/Internship'), { loading: DeferredSection })
+const Education = dynamic(() => import('@/components/Education'), { loading: DeferredSection })
+const Contact = dynamic(() => import('@/components/Contact'), { loading: DeferredSection })
 import { getImageUrl } from '@/utils/imageUtils'
 import { getSafeExternalUrl } from '@/utils/externalUrl'
 import type { Profile, Project as ProjectType, Skill, Experience, Education as EducationType, SocialLink, ToastType } from '@/types/portfolio'

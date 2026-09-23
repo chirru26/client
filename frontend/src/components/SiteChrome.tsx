@@ -1,10 +1,12 @@
 'use client'
 
 import { useEffect, useState, type ReactNode } from 'react'
+import dynamic from 'next/dynamic'
 import Navbar from '@/components/Navbar'
-import ResponsiveMenu from '@/components/ResponsiveMenu'
 import Footer from '@/components/Footer'
-import Toast from '@/components/Toast'
+
+const ResponsiveMenu = dynamic(() => import('@/components/ResponsiveMenu'))
+const Toast = dynamic(() => import('@/components/Toast'))
 import { portfolioApi } from '@/api'
 import type { Profile, SocialLink, ToastItem } from '@/types/portfolio'
 
@@ -48,19 +50,21 @@ export default function SiteChrome({children,profile,socialLinks}:SiteChromeProp
         onToggleTheme={() => setTheme((t) => (t === 'dark' ? 'light' : 'dark'))}
       />
 
-      <ResponsiveMenu
-        open={menuOpen}
-        onClose={() => setMenuOpen(false)}
-        theme={theme}
-        onToggleTheme={() => setTheme((t) => (t === 'dark' ? 'light' : 'dark'))}
-        socialLinks={socialLinks}
-      />
+      {menuOpen && (
+        <ResponsiveMenu
+          open
+          onClose={() => setMenuOpen(false)}
+          theme={theme}
+          onToggleTheme={() => setTheme((t) => (t === 'dark' ? 'light' : 'dark'))}
+          socialLinks={socialLinks}
+        />
+      )}
 
       <main>{children}</main>
 
       <Footer profile={profile} socialLinks={socialLinks} />
 
-      <Toast toasts={toasts} onDismiss={dismissToast} />
+      {toasts.length > 0 && <Toast toasts={toasts} onDismiss={dismissToast} />}
     </div>
   )
 }

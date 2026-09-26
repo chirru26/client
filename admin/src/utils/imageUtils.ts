@@ -1,16 +1,34 @@
 /**
- * Centralized image URL utility for the Admin panel.
+ * Resolve media URLs used by the admin UI.
  *
- * During the Next.js migration this remains compatible with the existing
- * backend media-proxy contract. The Cloudinary-to-media-ID contract will be
- * migrated in the dedicated media phase.
+ * The browser must only receive application-owned media URLs such as
+ * /api/v2/media/42. Storage-provider URLs are intentionally rejected here.
  */
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v2'
 
-export function getImageUrl(cloudinaryUrl) {
-  if (!cloudinaryUrl || typeof cloudinaryUrl !== 'string' || cloudinaryUrl.trim() === '') {
-    return null
+export function getImageUrl(value: unknown): string | null {
+  if (typeof value !== 'string' || value.trim() === '') return null
+
+  const trimmed = value.trim()
+
+  // Backend media-proxy URL returned by the profile/media APIs.
+  if (trimmed.startsWith('/api/v2/media/')) {
+    return `${API_BASE_URL.replace(/\/api\/v2\/?$/, '')}${trimmed}`
   }
-  return `${API_BASE_URL}/images?id=${encodeURIComponent(cloudinaryUrl.trim())}`
+
+  if (trimmed.startsWith('/media/')) {
+    return `${API_BASE_URL}${trimmed}`
+  }
+
+  // Already an application API URL.
+  if (trimmed.startsWith(API_BASE_URL + '/media/')) {
+    return trimmed
+  }
+
+  // Never turn a Cloudinary/storage URL into a browser-visible query parameter.
+  // Legacy assets need to be migrated to media_assets and referenced by media ID.
+  if (trimmed.includes('res.cloudinary.com/')) return null
+
+  return trimmed
 }

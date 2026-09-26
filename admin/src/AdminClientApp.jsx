@@ -2,10 +2,9 @@
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { useState } from 'react'
-import { BrowserRouter } from 'react-router-dom'
 import App from './App'
 
-export default function AdminClientApp() {
+export default function AdminClientApp({ children }) {
   const [queryClient] = useState(() => new QueryClient({
     defaultOptions: {
       queries: {
@@ -17,9 +16,7 @@ export default function AdminClientApp() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
+      <App>{children}</App>
     </QueryClientProvider>
   )
 }

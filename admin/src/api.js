@@ -1,7 +1,5 @@
-const API_URL = (import.meta.env.VITE_API_URL)
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v2'
 const TOKEN_KEY = 'chirru_admin_access_token'
-
-try { localStorage.removeItem(TOKEN_KEY) } catch { }
 
 export const authStore = {
   get: () => {
@@ -67,7 +65,6 @@ export const auth = {
 }
 
 export const adminApi = {
-  // Core Portfolio & CMS
   dashboard: () => request('/admin/dashboard'),
   profile: () => request('/admin/profile'),
   saveProfile: (body) => request('/admin/profile', { method: 'PUT', body: JSON.stringify(body) }),
@@ -101,7 +98,6 @@ export const adminApi = {
   markMessage: (id, read) => request(`/admin/messages/${id}/read`, { method: 'PATCH', body: JSON.stringify({ read }) }),
   deleteMessage: (id) => request(`/admin/messages/${id}`, { method: 'DELETE' }),
 
-  // Media Management
   mediaList: (folder) => request(`/admin/media${folder ? `?folder=${encodeURIComponent(folder)}` : ''}`),
   recordMedia: (body) => request('/admin/media/record', { method: 'POST', body: JSON.stringify(body) }),
   deleteMediaRecord: (publicId) => request(`/admin/media/record?publicId=${encodeURIComponent(publicId)}`, { method: 'DELETE' }),
@@ -132,28 +128,18 @@ export const adminApi = {
       method: 'DELETE',
     }),
 
-  // Analytics Hub
   analyticsDashboard: () => request('/admin/analytics/dashboard'),
   analytics: (days = 30) => request(`/admin/analytics?days=${days}`),
-
-  // Audit Logs Trail
   auditLogs: (page = 0, size = 20) => request(`/admin/audit-logs?page=${page}&size=${size}&sort=createdAt,desc`),
 
-  // Social Links
   socialLinks: () => request('/admin/social-links'),
   createSocialLink: (body) => request('/admin/social-links', { method: 'POST', body: JSON.stringify(body) }),
   deleteSocialLink: (id) => request(`/admin/social-links/${id}`, { method: 'DELETE' }),
 
-  // SEO & Metadata Management
-  seo: (page) => request(`/admin/seo/${page}`),
-  saveSeo: (page, body) => request(`/admin/seo/${page}`, { method: 'PUT', body: JSON.stringify(body) }),
-
-  // Resumes Versioning
   resumes: () => request('/admin/resumes'),
   createResume: (body) => request('/admin/resumes', { method: 'POST', body: JSON.stringify(body) }),
   deleteResume: (id) => request(`/admin/resumes/${id}`, { method: 'DELETE' }),
 
-  // Project Tags
   tags: () => request('/admin/tags'),
   createTag: (body) => request('/admin/tags', { method: 'POST', body: JSON.stringify(body) }),
   deleteTag: (id) => request(`/admin/tags/${id}`, { method: 'DELETE' }),
@@ -161,15 +147,12 @@ export const adminApi = {
   saveProjectTags: (projectId, tagIds) =>
     request(`/admin/projects/${projectId}/tags`, { method: 'PUT', body: JSON.stringify({ tagIds }) }),
 
-  // Admin Notifications
   notifications: (unreadOnly = false) => request(`/admin/notifications?unreadOnly=${unreadOnly}`),
   createNotification: (body) => request('/admin/notifications', { method: 'POST', body: JSON.stringify(body) }),
   markNotificationRead: (id) => request(`/admin/notifications/${id}/read`, { method: 'PUT' }),
 
-  // Global Search
   search: (q) => request(`/admin/search?q=${encodeURIComponent(q)}`),
 
-  // Settings
   settings: () => request('/admin/settings'),
   saveSetting: (key, value) => request(`/admin/settings/${key}`, { method: 'PUT', body: JSON.stringify({ value }) }),
 }

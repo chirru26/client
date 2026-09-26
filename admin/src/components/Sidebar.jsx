@@ -1,3 +1,5 @@
+'use client'
+
 import { useQuery } from '@tanstack/react-query'
 import {
   Activity,
@@ -15,13 +17,11 @@ import {
   LogOut,
   Mail,
   Menu,
-  Search,
   Settings,
   Share2,
   ShieldCheck,
   UserRound,
   Wrench,
-  X,
 } from 'lucide-react'
 import { Link, useLocation } from 'react-router-dom'
 import { adminApi } from '../api'
@@ -53,7 +53,6 @@ const navSections = [
       { to: '/media', label: 'Media & Documents', icon: CloudUpload },
       { to: '/resumes', label: 'Resume Editions', icon: FileText },
       { to: '/social-links', label: 'Social Links', icon: Share2 },
-      { to: '/seo', label: 'SEO & Metadata', icon: Search },
     ],
   },
   {
@@ -68,19 +67,14 @@ const navSections = [
 
 export default function Sidebar({ isOpen, onToggle, onClose, onLogout }) {
   const location = useLocation()
-  const publicSiteUrl = import.meta.env.VITE_PUBLIC_SITE_URL || 'http://localhost:5174'
+  const publicSiteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:5174'
 
-  const profileQuery = useQuery({
-    queryKey: ['profile'],
-    queryFn: adminApi.profile,
-  })
-
+  const profileQuery = useQuery({ queryKey: ['profile'], queryFn: adminApi.profile })
   const dashQuery = useQuery({
     queryKey: ['dashboard'],
     queryFn: adminApi.dashboard,
     staleTime: 30000,
   })
-
   const notifQuery = useQuery({
     queryKey: ['notifications', true],
     queryFn: () => adminApi.notifications(true),
@@ -92,21 +86,14 @@ export default function Sidebar({ isOpen, onToggle, onClose, onLogout }) {
   const unreadNotifs = (notifQuery.data || []).length
 
   const handleClose = () => {
-    if (onClose) {
-      onClose()
-    } else if (onToggle) {
-      onToggle()
-    }
+    if (onClose) onClose()
+    else if (onToggle) onToggle()
   }
 
   return (
     <>
       {isOpen && <div className="sidebar-backdrop" onClick={handleClose} />}
-      <aside
-        className={`sidebar ${isOpen ? 'mobile-open' : ''}`}
-        aria-label="Sidebar Navigation"
-      >
-        {/* Header matching exact layout */}
+      <aside className={`sidebar ${isOpen ? 'mobile-open' : ''}`} aria-label="Sidebar Navigation">
         <div className="sidebar-header">
           <div className="sidebar-user-block">
             <div className="sidebar-brand-avatar">
@@ -121,16 +108,11 @@ export default function Sidebar({ isOpen, onToggle, onClose, onLogout }) {
               <span className="sidebar-user-role">Portfolio Administrator</span>
             </div>
           </div>
-          <button
-            className="sidebar-toggle-btn"
-            onClick={onToggle}
-            aria-label="Toggle navigation menu"
-          >
+          <button className="sidebar-toggle-btn" onClick={onToggle} aria-label="Toggle navigation menu">
             <Menu size={18} />
           </button>
         </div>
 
-        {/* Navigation Items with Forest Green Capsule Active State */}
         <nav className="sidebar-nav">
           {navSections.map((sec) => (
             <div key={sec.title} className="sidebar-section">
@@ -143,22 +125,16 @@ export default function Sidebar({ isOpen, onToggle, onClose, onLogout }) {
                     to={to}
                     className={`sidebar-item ${isActive ? 'active' : ''}`}
                     onClick={() => {
-                      if (window.innerWidth <= 1024) {
-                        handleClose()
-                      }
+                      if (window.innerWidth <= 1024) handleClose()
                     }}
                   >
                     <div className="sidebar-item-content">
                       <Icon size={16} />
                       <span>{label}</span>
                     </div>
-                    {isMessage && unreadMessages > 0 && (
-                      <span className="sidebar-badge">{unreadMessages}</span>
-                    )}
+                    {isMessage && unreadMessages > 0 && <span className="sidebar-badge">{unreadMessages}</span>}
                     {isNotification && unreadNotifs > 0 && (
-                      <span className="sidebar-badge" style={{ background: '#3b82f6' }}>
-                        {unreadNotifs}
-                      </span>
+                      <span className="sidebar-badge" style={{ background: '#3b82f6' }}>{unreadNotifs}</span>
                     )}
                   </Link>
                 )
@@ -167,22 +143,12 @@ export default function Sidebar({ isOpen, onToggle, onClose, onLogout }) {
           ))}
         </nav>
 
-        {/* Footer Actions */}
         <div className="sidebar-footer">
-          <a
-            href={publicSiteUrl}
-            target="_blank"
-            rel="noreferrer"
-            className="sidebar-btn-footer"
-          >
+          <a href={publicSiteUrl} target="_blank" rel="noreferrer" className="sidebar-btn-footer">
             <ExternalLink size={15} />
             <span>Public Website</span>
           </a>
-
-          <button
-            className="sidebar-btn-footer sidebar-btn-logout"
-            onClick={onLogout}
-          >
+          <button className="sidebar-btn-footer sidebar-btn-logout" onClick={onLogout}>
             <LogOut size={15} />
             <span>Sign Out</span>
           </button>

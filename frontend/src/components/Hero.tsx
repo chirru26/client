@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
 import { ArrowUpRight, Code2, FileText, Github, Globe, Linkedin, Instagram, Mail, MapPin, Send, User } from 'lucide-react'
@@ -35,6 +36,10 @@ export default function Hero({ profile = {}, socialLinks = [], projectCount = 0,
   const safeXLink = getSafeExternalUrl(xLink)
   const safeEmail = getSafeMailto(email)
 
+  const [imgError, setImgError] = useState(false)
+  const avatarUrl = getImageUrl(profile.imageUrl)
+  const showAvatar = Boolean(avatarUrl && !imgError)
+
   // Clean headline if default is informal
   const headline = profile.headline || 'Aspiring Java & Backend Software Engineer'
 
@@ -60,15 +65,16 @@ export default function Hero({ profile = {}, socialLinks = [], projectCount = 0,
             {/* Profile Info Row */}
             <div className="hero-landscape-profile">
               <div className="avatar-wrapper hero-avatar-landscape">
-                {profile.imageUrl ? (
+                {showAvatar ? (
                   <Image
-                    src={getImageUrl(profile.imageUrl) || ''}
+                    src={avatarUrl!}
                     alt={`${profile.name || 'Chiranjit Das'} - Java & Backend Software Engineer`}
                     className="avatar-img"
                     width={160}
                     height={160}
                     sizes="160px"
                     priority
+                    onError={() => setImgError(true)}
                   />
                 ) : (
                   <div className="avatar-fallback"><User size={60} /></div>

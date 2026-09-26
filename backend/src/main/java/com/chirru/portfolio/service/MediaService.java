@@ -48,10 +48,14 @@ public class MediaService {
 
     public Optional<Long> findIdByPublicIdOrUrl(String publicId, String url) {
         var idFromPublicId = extractMediaId(publicId);
-        if (idFromPublicId.isPresent()) return idFromPublicId;
+        if (idFromPublicId.isPresent() && findById(idFromPublicId.get()).isPresent()) {
+            return idFromPublicId;
+        }
 
         var idFromUrl = extractMediaId(url);
-        if (idFromUrl.isPresent()) return idFromUrl;
+        if (idFromUrl.isPresent() && findById(idFromUrl.get()).isPresent()) {
+            return idFromUrl;
+        }
 
         if (publicId != null && !publicId.isBlank()) {
             var byPublicId = findIdByPublicId(publicId);

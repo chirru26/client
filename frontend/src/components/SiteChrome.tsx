@@ -12,24 +12,13 @@ import type { Profile, SocialLink, ToastItem } from '@/types/portfolio'
 
 interface SiteChromeProps { children: ReactNode; profile: Profile; socialLinks: SocialLink[] }
 
-const THEME_KEY='chirru_theme'
+import { useTheme } from '@/utils/themeStore'
 
 export default function SiteChrome({children,profile,socialLinks}:SiteChromeProps){
   const [menuOpen,setMenuOpen]=useState(false)
   const [toasts,setToasts]=useState<ToastItem[]>([])
-  const [theme,setTheme]=useState<'light'|'dark'>('light') // SSR-safe; corrected in effect below
+  const { theme, toggleTheme } = useTheme()
 
-  useEffect(()=>{
-    /* oxlint-disable react/set-state-in-effect -- reading browser localStorage post-hydration is the correct SSR pattern */
-    const stored=localStorage.getItem(THEME_KEY)
-    if(stored==='light'||stored==='dark') setTheme(stored)
-    else if(window.matchMedia('(prefers-color-scheme: dark)').matches) setTheme('dark')
-    /* oxlint-enable react/set-state-in-effect */
-  },[])
-  useEffect(()=>{
-    document.documentElement.setAttribute('data-theme',theme)
-    localStorage.setItem(THEME_KEY,theme)
-  },[theme])
   useEffect(()=>{const handler=(e:KeyboardEvent)=>{if(e.key==='Escape')setMenuOpen(false)};window.addEventListener('keydown',handler);return()=>window.removeEventListener('keydown',handler)},[])
 
   function dismissToast(id:string){setToasts(prev=>prev.filter(t=>t.id!==id))}
@@ -47,7 +36,7 @@ export default function SiteChrome({children,profile,socialLinks}:SiteChromeProp
       <Navbar
         onMenu={() => setMenuOpen(true)}
         theme={theme}
-        onToggleTheme={() => setTheme((t) => (t === 'dark' ? 'light' : 'dark'))}
+        onToggleTheme={toggleTheme}
       />
 
       {menuOpen && (
@@ -55,7 +44,7 @@ export default function SiteChrome({children,profile,socialLinks}:SiteChromeProp
           open
           onClose={() => setMenuOpen(false)}
           theme={theme}
-          onToggleTheme={() => setTheme((t) => (t === 'dark' ? 'light' : 'dark'))}
+          onToggleTheme={toggleTheme}
           socialLinks={socialLinks}
         />
       )}

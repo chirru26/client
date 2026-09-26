@@ -27,6 +27,21 @@ class PortfolioApplicationTests {
     }
 
     @Test
+    void testMedia2Endpoint() throws Exception {
+        try {
+            var client = org.springframework.web.client.RestClient.builder().build();
+            var resp = client.get().uri("https://res.cloudinary.com/rnplcrmq/image/upload/v1790045813/chirru-portfolio/profile/profile.jpg").retrieve().toEntity(byte[].class);
+            System.out.println("=== DIRECT RESTCLIENT STATUS: " + resp.getStatusCode() + ", bytes=" + (resp.getBody() != null ? resp.getBody().length : 0));
+        } catch (Exception e) {
+            System.out.println("=== DIRECT RESTCLIENT EXCEPTION: " + e.getClass().getName() + ": " + e.getMessage());
+            e.printStackTrace();
+        }
+        mockMvc.perform(get("/media/2"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.IMAGE_JPEG));
+    }
+
+    @Test
     void testSkillsEndpoint() throws Exception {
         mockMvc.perform(get("/portfolio/skills").accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())

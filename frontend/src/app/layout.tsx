@@ -66,8 +66,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     const [profile, socialLinks] = await Promise.all([serverApi.profile(), serverApi.socialLinks()]);
     return (
         <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable}`} suppressHydrationWarning>
-            <body>
+            <head>
                 <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+            </head>
+            <body>
                 <SiteChrome profile={profile} socialLinks={socialLinks}>{children}</SiteChrome>
             </body>
         </html>

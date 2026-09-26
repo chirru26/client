@@ -4,15 +4,22 @@ import com.chirru.portfolio.service.MediaService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.http.CacheControl;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestClient;
 
+import java.time.Duration;
+import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 @RestController
@@ -23,10 +30,41 @@ public class ImageProxyController {
     private static final long MAX_MEDIA_BYTES = 10L * 1024 * 1024;
 
     private final MediaService mediaService;
-    private final RestClient restClient = RestClient.builder().build();
+    private final Map<Long, CachedMedia> cache = new ConcurrentHashMap<>();
+
+    private final RestClient restClient = RestClient.builder()
+            .requestFactory(createRequestFactory())
+            .build();
+
+    private static SimpleClientHttpRequestFactory createRequestFactory() {
+        SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
+        factory.setConnectTimeout(Duration.ofSeconds(6));
+        factory.setReadTimeout(Duration.ofSeconds(12));
+        return factory;
+    }
+
+    @EventListener(ApplicationReadyEvent.class)
+    public void warmCache() {
+        CompletableFuture.runAsync(() -> {
+            for (long id : new long[]{1, 2, 5, 7}) {
+                try {
+                    proxyMedia(id);
+                } catch (Exception ignored) {}
+            }
+        });
+    }
 
     @GetMapping("/{id:\\d+}")
     public ResponseEntity<byte[]> proxyMedia(@PathVariable long id) {
+        CachedMedia cached = cache.get(id);
+        if (cached != null) {
+            return ResponseEntity.ok()
+                    .contentType(cached.contentType)
+                    .cacheControl(CacheControl.maxAge(24, TimeUnit.HOURS).cachePublic())
+                    .header("X-Content-Type-Options", "nosniff")
+                    .body(cached.data);
+        }
+
         Optional<MediaService.MediaAsset> asset = mediaService.findById(id);
         if (asset.isEmpty()) return ResponseEntity.notFound().build();
 
@@ -53,6 +91,8 @@ public class ImageProxyController {
                 }
             }
 
+            cache.put(id, new CachedMedia(body, contentType));
+
             return ResponseEntity.ok()
                     .contentType(contentType)
                     .cacheControl(CacheControl.maxAge(24, TimeUnit.HOURS).cachePublic())
@@ -64,7 +104,13 @@ public class ImageProxyController {
         }
     }
 
+    public void evictCache(long id) {
+        cache.remove(id);
+    }
+
     private boolean isAllowedCloudinaryDeliveryUrl(String url) {
         return url != null && url.startsWith("https://res.cloudinary.com/");
     }
+
+    public record CachedMedia(byte[] data, MediaType contentType) {}
 }

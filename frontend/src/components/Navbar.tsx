@@ -1,9 +1,10 @@
 'use client'
 
-import { useEffect, useRef, useState, type MouseEvent } from 'react'
+import { useEffect, useState, type MouseEvent } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import { Menu, Sun, Moon, FileText } from 'lucide-react'
 import { portfolioApi } from '@/api'
+import { useIsMounted } from '@/utils/themeStore'
 
 const navLinks = [
   { label: 'About', href: '#about', route: '/about' },
@@ -24,22 +25,9 @@ export default function Navbar({ onMenu, theme, onToggleTheme }: NavbarProps) {
   const [scrolled, setScrolled] = useState(false)
   const [visible, setVisible] = useState(true)
   const [scrollDirection, setScrollDirection] = useState<'up' | 'down'>('up')
-  const mounted = useRef(false)
-  const [themeIcon, setThemeIcon] = useState<'moon' | 'sun'>('moon') // always moon until hydrated
+  const mounted = useIsMounted()
   const pathname = usePathname() || '/'
   const router = useRouter()
-
-  useEffect(() => {
-    if (!mounted.current) {
-      mounted.current = true
-      setThemeIcon(theme === 'dark' ? 'sun' : 'moon')
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
-  useEffect(() => {
-    if (mounted.current) setThemeIcon(theme === 'dark' ? 'sun' : 'moon')
-  }, [theme])
 
   useEffect(() => {
     let lastScrollY = window.scrollY
@@ -157,7 +145,7 @@ export default function Navbar({ onMenu, theme, onToggleTheme }: NavbarProps) {
             onClick={onToggleTheme}
             aria-label="Toggle dark/light theme"
           >
-            {themeIcon === 'moon' ? <Moon size={16} /> : <Sun size={16} />}
+            {mounted && theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
           </button>
 
           <a

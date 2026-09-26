@@ -22,8 +22,15 @@ const PROD_MEDIA_HOST = {
   pathname: '/api/v2/media/**',
 }
 
+const CLOUDINARY_HOST = {
+  protocol: 'https' as const,
+  hostname: 'res.cloudinary.com',
+  pathname: '/**',
+}
+
 const remotePatterns = [
   PROD_MEDIA_HOST,
+  CLOUDINARY_HOST,
   imagePatternFromApiUrl(process.env.NEXT_PUBLIC_API_URL),
   imagePatternFromApiUrl(process.env.API_URL),
 ].filter((pattern, index, all): pattern is NonNullable<typeof pattern> => {
@@ -42,7 +49,7 @@ const productionSecurityHeaders = [
       "form-action 'self'",
       "script-src 'self' 'unsafe-inline'",
       "style-src 'self' 'unsafe-inline'",
-      "img-src 'self' data: blob: https://api.chirru.in",
+      "img-src 'self' data: blob: https://api.chirru.in https://res.cloudinary.com",
       "font-src 'self' data:",
       "connect-src 'self' https://api.chirru.in",
       "media-src 'self' https://api.chirru.in",

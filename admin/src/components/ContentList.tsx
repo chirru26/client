@@ -3,12 +3,13 @@ import { Plus, Search, Trash2 } from 'lucide-react'
 import { useState, type ComponentType, type FormEvent } from 'react'
 import CloudinaryUpload from './CloudinaryUpload'
 
-type Item = Record<string, unknown> & { id: string | number }
+type Item = { id: string | number; name?: string; title?: string; position?: string; degree?: string; category?: string; company?: string; institution?: string; issuer?: string; organization?: string; issueDate?: string; year?: string | number; period?: string; date?: string; description?: string; [key: string]: unknown }
 type FormValue = string | number | boolean
 interface FormField { name: string; label: string; type?: string; required?: boolean; placeholder?: string; rows?: number; options?: Array<string | { value: string; label: string }>; folder?: string; uploadLabel?: string; helpText?: string }
 interface Props { title: string; subtitle?: string; icon?: ComponentType<{ size?: number; color?: string }>; queryKey: string; queryFn: () => Promise<unknown>; createFn?: (data: Record<string, FormValue>) => Promise<unknown>; deleteFn?: (id: string | number) => Promise<unknown>; formFields?: FormField[]; displayPrimary?: (item: Item) => string; displaySecondary?: (item: Item) => string; displayExtra?: (item: Item) => string }
+const text = (value: unknown): string => value == null ? '' : String(value)
 
-export default function ContentList({ title, subtitle = 'Manage your portfolio items', icon: Icon, queryKey, queryFn, createFn, deleteFn, formFields = [], displayPrimary = (item) => String(item.name || item.title || item.position || ''), displaySecondary = (item) => String(item.category || item.company || item.institution || item.issuer || ''), displayExtra = (item) => String(item.year || item.period || item.date || item.description || '') }: Props) {
+export default function ContentList({ title, subtitle = 'Manage your portfolio items', icon: Icon, queryKey, queryFn, createFn, deleteFn, formFields = [], displayPrimary = (item) => text(item.name || item.title || item.position), displaySecondary = (item) => text(item.category || item.company || item.institution || item.issuer), displayExtra = (item) => text(item.year || item.period || item.date || item.description) }: Props) {
   const qc = useQueryClient(); const q = useQuery({ queryKey: [queryKey], queryFn }); const [formData, setFormData] = useState<Record<string, FormValue>>({}); const [search, setSearch] = useState(''); const [error, setError] = useState(''); const [busy, setBusy] = useState(false)
   if (q.isLoading) return <div className="loading-state"><div className="spinner" /><span>Loading {title.toLowerCase()}…</span></div>
   const items = (Array.isArray(q.data) ? q.data : []) as Item[]

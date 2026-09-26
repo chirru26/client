@@ -15,7 +15,6 @@ import Notifications from './components/Notifications'
 import Profile from './components/Profile'
 import Projects from './components/Projects'
 import Resumes from './components/Resumes'
-import SeoSettings from './components/SeoSettings'
 import Sidebar from './components/Sidebar'
 import SiteSettings from './components/SiteSettings'
 import Skills from './components/Skills'
@@ -31,9 +30,7 @@ function ProtectedLayout() {
 
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth > 1024) {
-        setIsMobileOpen(false)
-      }
+      if (window.innerWidth > 1024) setIsMobileOpen(false)
     }
     window.addEventListener('resize', handleResize)
     return () => window.removeEventListener('resize', handleResize)
@@ -54,7 +51,7 @@ function ProtectedLayout() {
     try {
       await auth.logout()
     } catch {
-      // ignore network errors during logout
+      // Ignore network errors during logout.
     }
     authStore.clear()
     navigate('/login', { replace: true })
@@ -68,21 +65,13 @@ function ProtectedLayout() {
     }
   }
 
-  const handleCloseMobile = () => {
-    setIsMobileOpen(false)
-  }
-
   return (
     <div className={`admin-shell ${isSidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
-      <GlobalSearchModal
-        isOpen={isSearchOpen}
-        onClose={() => setIsSearchOpen(false)}
-      />
-
+      <GlobalSearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
       <Sidebar
         isOpen={isMobileOpen}
         onToggle={handleToggle}
-        onClose={handleCloseMobile}
+        onClose={() => setIsMobileOpen(false)}
         onLogout={handleLogout}
       />
 
@@ -107,7 +96,6 @@ function ProtectedLayout() {
             <Route path="/media" element={<MediaManager />} />
             <Route path="/resumes" element={<Resumes />} />
             <Route path="/social-links" element={<SocialLinks />} />
-            <Route path="/seo" element={<SeoSettings />} />
             <Route path="/messages" element={<Messages />} />
             <Route path="/audit-logs" element={<AuditLogs />} />
             <Route path="/settings" element={<SiteSettings />} />
@@ -123,9 +111,7 @@ export default function App() {
   const [token, setToken] = useState(() => authStore.get())
 
   useEffect(() => {
-    const handleAuthChange = () => {
-      setToken(authStore.get())
-    }
+    const handleAuthChange = () => setToken(authStore.get())
     window.addEventListener('auth-change', handleAuthChange)
     window.addEventListener('storage', handleAuthChange)
     return () => {
@@ -136,14 +122,8 @@ export default function App() {
 
   return (
     <Routes>
-      <Route
-        path="/login"
-        element={token ? <Navigate to="/" replace /> : <Login />}
-      />
-      <Route
-        path="/*"
-        element={token ? <ProtectedLayout /> : <Navigate to="/login" replace />}
-      />
+      <Route path="/login" element={token ? <Navigate to="/" replace /> : <Login />} />
+      <Route path="/*" element={token ? <ProtectedLayout /> : <Navigate to="/login" replace />} />
     </Routes>
   )
 }

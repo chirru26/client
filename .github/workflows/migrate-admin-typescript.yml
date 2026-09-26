@@ -26,81 +26,53 @@ jobs:
           cache: npm
           cache-dependency-path: admin/package.json
 
-      - name: Convert admin JavaScript files to TypeScript
+      - name: Convert all admin JavaScript source files
         working-directory: admin
         run: |
           set -e
-
-          find app src -type f \( -name '*.jsx' -o -name '*.js' \) -print0 | while IFS= read -r -d '' file; do
+          while IFS= read -r -d '' file; do
             case "$file" in
-              *.jsx) mv "$file" "${file%.jsx}.tsx" ;;
-              *.js)  mv "$file" "${file%.js}.ts" ;;
+              *.jsx)
+                target="${file%.jsx}.tsx"
+                if [ -e "$target" ]; then rm "$file"; else mv "$file" "$target"; fi
+                ;;
+              *.js)
+                target="${file%.js}.ts"
+                if [ -e "$target" ]; then rm "$file"; else mv "$file" "$target"; fi
+                ;;
             esac
-          done
+          done < <(find app src -type f \( -name '*.jsx' -o -name '*.js' \) -print0)
 
           node <<'NODE'
-          const fs = require('fs');
-          const pkgPath = 'package.json';
-          const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+          const fs = require('fs')
+          const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'))
           pkg.devDependencies = {
             ...(pkg.devDependencies || {}),
             '@types/node': '^22.15.0',
             '@types/react': '^19.0.0',
             '@types/react-dom': '^19.0.0',
-            'typescript': '^5.8.3'
-          };
-          fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
+            typescript: '^5.8.3'
+          }
+          fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n')
           NODE
 
-          cat > tsconfig.json <<'EOF'
-          {
-            "compilerOptions": {
-              "target": "ES2017",
-              "lib": ["dom", "dom.iterable", "esnext"],
-              "allowJs": false,
-              "skipLibCheck": true,
-              "strict": false,
-              "noImplicitAny": false,
-              "noEmit": true,
-              "esModuleInterop": true,
-              "module": "esnext",
-              "moduleResolution": "bundler",
-              "resolveJsonModule": true,
-              "isolatedModules": true,
-              "jsx": "preserve",
-              "incremental": true,
-              "plugins": [{ "name": "next" }]
-            },
-            "include": ["next-env.d.ts", ".next/types/**/*.ts", "**/*.ts", "**/*.tsx"],
-            "exclude": ["node_modules"]
-          }
-          EOF
-
-          cat > next-env.d.ts <<'EOF'
-          /// <reference types="next" />
-          /// <reference types="next/image-types/global" />
-
-          // NOTE: This file should not be edited
-          // see https://nextjs.org/docs/app/api-reference/config/typescript for more information.
-          EOF
-
-      - name: Update TypeScript import extensions where needed
+      - name: Normalize TypeScript imports
         working-directory: admin
         run: |
-          find app src -type f \( -name '*.ts' -o -name '*.tsx' \) -print0 | xargs -0 sed -i -E "s/(from ['\"][^'\"]+)\.jsx(['\"])/\1\2/g; s/(from ['\"][^'\"]+)\.js(['\"])/\1\2/g"
+          find app src -type f \( -name '*.ts' -o -name '*.tsx' \) -print0 | xargs -0 sed -i -E "s/(from ['\"][^'\"]+)\.(jsx|js)(['\"])/\1\3/g"
 
-      - name: Install and validate
+      - name: Validate TypeScript and Next.js build
         working-directory: admin
         run: |
           npm install
           npx tsc --noEmit
           npm run build
 
-      - name: Commit TypeScript migration
+      - name: Commit completed migration
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           rm -f .github/workflows/migrate-admin-typescript.yml
-          git add admin .github/workflows/migrate-admin-typescript.yml
-          git commit -m "migrate admin JavaScript to TypeScript [admin-ts-migration]" || exit 0
+          git add -A admin .github/workflows/migrate-admin-typescript.yml
+          git commit -m "complete admin TypeScript migration [admin-ts-migration]" || exit 0
           git push origin next-js

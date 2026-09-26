@@ -1,30 +1,40 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import { auth, authStore } from './api'
 import GlobalSearchModal from './components/GlobalSearchModal'
 import Sidebar from './components/Sidebar'
 import TopHeader from './components/TopHeader'
 
-export default function App({ children }) {
+interface AppProps {
+  children?: ReactNode
+}
+
+export default function App({ children }: AppProps) {
   const pathname = usePathname()
   const router = useRouter()
-  const [token, setToken] = useState(() => authStore.get())
+  // Do not read sessionStorage during render. The server cannot access it,
+  // so doing so would make the first server/client render different.
+  const [token, setToken] = useState<string | null>(null)
+  const [authReady, setAuthReady] = useState(false)
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
   const [isMobileOpen, setIsMobileOpen] = useState(false)
   const [isSearchOpen, setIsSearchOpen] = useState(false)
 
   useEffect(() => {
+    setToken(authStore.get())
+    setAuthReady(true)
+
     const handleAuthChange = () => setToken(authStore.get())
     window.addEventListener('auth-change', handleAuthChange)
     return () => window.removeEventListener('auth-change', handleAuthChange)
   }, [])
 
   useEffect(() => {
-    if (pathname === '/login') return
+    if (!authReady || pathname === '/login') return
     if (!token) router.replace('/login')
-  }, [pathname, token, router])
+  }, [authReady, pathname, token, router])
 
   useEffect(() => {
     const handleResize = () => {
@@ -35,7 +45,7 @@ export default function App({ children }) {
   }, [])
 
   useEffect(() => {
-    const handleKeyDown = (e) => {
+    const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault()
         setIsSearchOpen((prev) => !prev)
@@ -46,7 +56,10 @@ export default function App({ children }) {
   }, [])
 
   if (pathname === '/login') return children
-  if (!token) return null
+
+  // Keep the first client render identical to the server render.
+  // Authentication state is known only after sessionStorage is read in useEffect.
+  if (!authReady || !token) return null
 
   async function handleLogout() {
     try {

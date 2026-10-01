@@ -12,6 +12,7 @@ out/
 
 # Build/cache
 dist/
+*.tsbuildinfo
 *.local
 
 # Logs

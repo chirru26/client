@@ -33,6 +33,7 @@ export default function Dashboard() {
   const education = (Array.isArray(educationQuery.data) ? educationQuery.data : []) as RecordItem[]
   const certs = (Array.isArray(certsQuery.data) ? certsQuery.data : []) as RecordItem[]
   const name = String(profile.name || 'Chiranjit Das')
+  const avatarSrc = getImageUrl(profile.imageUrl)
   const unreadCount = Number(d.unreadMessages ?? messages.filter((m) => !m.read).length)
   const projectsCount = Number(d.projects ?? projects.length)
   const skillsCount = Number(d.skills ?? skills.length)
@@ -65,7 +66,7 @@ export default function Dashboard() {
 
   return <div className="dashboard-container">
     <div className="executive-hero">
-      <div className="executive-hero-left"><div className="executive-hero-avatar">{profile.imageUrl ? <img src={getImageUrl(String(profile.imageUrl))} alt={name} /> : name.charAt(0).toUpperCase()}</div><div className="executive-hero-info"><span className="executive-hero-tag">PORTFOLIO ADMINISTRATOR</span><h1 className="executive-hero-title">{greeting}, {name}</h1><div className="executive-hero-subrow"><span>• Projects: {projectsCount}</span><span>• Skills: {skillsCount}</span><span>• Roles: {experienceCount}</span><span className="executive-hero-badge"><span className="hero-status-dot" />PORTFOLIO LIVE</span></div></div></div>
+      <div className="executive-hero-left"><div className="executive-hero-avatar">{avatarSrc ? <img src={avatarSrc} alt={name} onError={(e) => { e.currentTarget.style.display = 'none'; if (e.currentTarget.parentElement) { e.currentTarget.parentElement.innerText = name.charAt(0).toUpperCase() } }} /> : name.charAt(0).toUpperCase()}</div><div className="executive-hero-info"><span className="executive-hero-tag">PORTFOLIO ADMINISTRATOR</span><h1 className="executive-hero-title">{greeting}, {name}</h1><div className="executive-hero-subrow"><span>• Projects: {projectsCount}</span><span>• Skills: {skillsCount}</span><span>• Roles: {experienceCount}</span><span className="executive-hero-badge"><span className="hero-status-dot" />PORTFOLIO LIVE</span></div></div></div>
       <div className="executive-hero-right" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}><div className="executive-clock-card"><div className="executive-clock-date"><span>📅</span><span>{formattedDate}</span></div><div className="executive-clock-time"><Clock size={16} /><span>{formattedTime}</span></div></div><div className="executive-clock-card" style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', opacity: savingOpenToWork ? 0.6 : 1 }}><span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Available for Opportunities</span><button type="button" role="switch" aria-checked={!!profile.openToWork} onClick={toggleOpenToWork} disabled={savingOpenToWork} style={{ position: 'relative', width: 44, height: 24, borderRadius: 12, border: 'none', cursor: savingOpenToWork ? 'not-allowed' : 'pointer', background: profile.openToWork ? 'var(--accent-green, #22c55e)' : 'var(--bg-elevated, #374151)', padding: 0 }}><span style={{ position: 'absolute', top: 2, left: profile.openToWork ? 22 : 2, width: 20, height: 20, borderRadius: '50%', background: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,0.3)' }} /></button></div></div>
     </div>
 

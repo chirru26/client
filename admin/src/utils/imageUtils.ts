@@ -1,19 +1,25 @@
 /**
  * Resolve image URLs for the Next.js admin UI.
- *
- * The browser must only request application-owned media endpoints.
- * Storage-provider URLs (for example Cloudinary) and the legacy
- * /api/v2/images?id=... endpoint are intentionally rejected.
  */
 
 const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v2').replace(/\/$/, '')
 const API_ORIGIN = API_BASE_URL.replace(/\/api\/v2\/?$/, '')
 
 export function getImageUrl(value: unknown): string | null {
-  if (typeof value !== 'string') return null
+  if (!value || typeof value !== 'string') return null
 
   const trimmed = value.trim()
   if (!trimmed) return null
+
+  // Direct data or blob URLs
+  if (trimmed.startsWith('data:image/') || trimmed.startsWith('blob:')) {
+    return trimmed
+  }
+
+  // Raw numeric media ID: "2"
+  if (/^\d+$/.test(trimmed)) {
+    return `${API_ORIGIN}/api/v2/media/${trimmed}`
+  }
 
   // Current backend media proxy: /api/v2/media/{id}
   if (/^\/api\/v2\/media\/\d+$/.test(trimmed)) {
@@ -25,23 +31,28 @@ export function getImageUrl(value: unknown): string | null {
     return `${API_BASE_URL}${trimmed}`
   }
 
-  // Fully-qualified current media proxy URL.
+  // Fully-qualified current media proxy URL
   if (/\/api\/v2\/media\/\d+$/.test(trimmed)) {
     return trimmed
   }
 
-  // Never allow the legacy Cloudinary URL proxy flow back into the app.
+  // Legacy rejected formats
   if (trimmed.includes('/api/v2/images') || trimmed.includes('/images?id=')) {
     return null
   }
 
-  // Never expose Cloudinary/storage-provider URLs in the browser.
+  // Cloudinary URL fallback
   if (/^https?:\/\/res\.cloudinary\.com\//i.test(trimmed)) {
-    return null
+    return trimmed
   }
 
-  // Local/public application assets are safe.
+  // Local/public application assets
   if (trimmed.startsWith('/') && !trimmed.startsWith('//')) {
+    return trimmed
+  }
+
+  // Any other valid absolute HTTPS/HTTP image URL
+  if (/^https?:\/\//i.test(trimmed)) {
     return trimmed
   }
 

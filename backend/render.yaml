@@ -4,7 +4,7 @@ services:
     runtime: docker
     plan: free
     branch: main
-    healthCheckPath: /health
+    healthCheckPath: /api/v2/health
     autoDeploy: true
     envVars:
       - key: DB_URL

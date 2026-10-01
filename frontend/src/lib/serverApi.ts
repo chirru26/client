@@ -20,6 +20,7 @@ async function get<T>(path: string, fallback: T): Promise<T> {
     const response = await fetch(url, {
       cache: 'no-store',
       headers: { Accept: 'application/json' },
+      signal: AbortSignal.timeout(8000),
     })
 
     if (!response.ok) {

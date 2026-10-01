@@ -4,7 +4,6 @@ import {
   Clock,
   Mail,
   MailOpen,
-  MailQuestion,
   RotateCcw,
   Search,
   Send,

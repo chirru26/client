@@ -5,6 +5,7 @@ import { BadgeCheck, BarChart3, Bell, BriefcaseBusiness, CloudUpload, ExternalLi
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { adminApi } from '../api'
+import { getImageUrl } from '../utils/imageUtils'
 
 const navSections = [
   { title: 'Overview', items: [{ to: '/', label: 'Dashboard', icon: LayoutDashboard }, { to: '/analytics', label: 'Analytics Hub', icon: BarChart3 }, { to: '/notifications', label: 'Notifications', icon: Bell, isNotification: true }] },
@@ -20,6 +21,7 @@ export default function Sidebar({ isOpen, onToggle, onClose, onLogout }) {
   const dashQuery = useQuery({ queryKey: ['dashboard'], queryFn: adminApi.dashboard, staleTime: 30000 })
   const notifQuery = useQuery({ queryKey: ['notifications', true], queryFn: () => adminApi.notifications(true), staleTime: 30000 })
   const name = profileQuery.data?.name || 'Chiranjit Das'
+  const avatarSrc = getImageUrl(profileQuery.data?.imageUrl)
   const unreadMessages = dashQuery.data?.unreadMessages || 0
   const unreadNotifs = (notifQuery.data || []).length
   const handleClose = () => (onClose ? onClose() : onToggle?.())
@@ -30,7 +32,7 @@ export default function Sidebar({ isOpen, onToggle, onClose, onLogout }) {
       <aside className={`sidebar ${isOpen ? 'mobile-open' : ''}`} aria-label="Sidebar Navigation">
         <div className="sidebar-header">
           <div className="sidebar-user-block">
-            <div className="sidebar-brand-avatar">{profileQuery.data?.imageUrl ? <img src={profileQuery.data.imageUrl} alt={name} /> : name.charAt(0).toUpperCase()}</div>
+            <div className="sidebar-brand-avatar">{avatarSrc ? <img src={avatarSrc} alt={name} onError={(e) => { e.currentTarget.style.display = 'none'; if (e.currentTarget.parentElement) { e.currentTarget.parentElement.innerText = name.charAt(0).toUpperCase() } }} /> : name.charAt(0).toUpperCase()}</div>
             <div className="sidebar-user-meta"><span className="sidebar-user-name">{name}</span><span className="sidebar-user-role">Portfolio Administrator</span></div>
           </div>
           <button className="sidebar-toggle-btn" onClick={onToggle} aria-label="Toggle navigation menu"><Menu size={18} /></button>

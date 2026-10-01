@@ -24,6 +24,7 @@ public class AdminPortfolioService {
     private final CertificationRepository certificationRepository;
     private final MessageRepository messageRepository;
     private final FeatureManagementService featureManagementService;
+    private final MediaService mediaService;
 
     @Transactional(readOnly = true)
     public AdminDashboardResponse dashboard() {
@@ -34,7 +35,14 @@ public class AdminPortfolioService {
 
     @Transactional(readOnly = true)
     public Profile getProfile() {
-        return profileRepository.findAll().stream().findFirst().orElseThrow(() -> notFound("Profile not configured"));
+        Profile p = profileRepository.findAll().stream().findFirst().orElseThrow(() -> notFound("Profile not configured"));
+        if (p.getImagePublicId() != null || p.getImageUrl() != null) {
+            p.setImageUrl(mediaService.resolveMediaUrl(p.getImagePublicId(), p.getImageUrl()));
+        }
+        if (p.getResumePublicId() != null || p.getResumeUrl() != null) {
+            p.setResumeUrl(mediaService.resolveMediaUrl(p.getResumePublicId(), p.getResumeUrl()));
+        }
+        return p;
     }
 
     public Profile saveProfile(ProfileRequest r) {

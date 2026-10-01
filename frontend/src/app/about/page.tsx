@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import AboutPage from '@/pages/AboutPage'
+import AboutPage from '@/views/AboutPage'
 import { serverApi } from '@/lib/serverApi'
 
 export const metadata: Metadata = {

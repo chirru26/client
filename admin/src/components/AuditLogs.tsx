@@ -4,7 +4,6 @@ import {
   ChevronLeft,
   ChevronRight,
   Clock,
-  Filter,
   Search,
   ShieldCheck,
   User,

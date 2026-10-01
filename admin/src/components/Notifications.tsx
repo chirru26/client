@@ -4,11 +4,9 @@ import {
   Check,
   Clock,
   ExternalLink,
-  Mail,
   Plus,
   Shield,
   Sparkles,
-  Trash2,
 } from 'lucide-react'
 import { useState } from 'react'
 import { adminApi } from '../api'

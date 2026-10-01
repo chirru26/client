@@ -1,7 +1,7 @@
 'use client'
 
 import { useQuery } from '@tanstack/react-query'
-import { ExternalLink, LogOut, Menu, Moon, Search, Sparkles, Sun } from 'lucide-react'
+import { ExternalLink, LogOut, Menu, Moon, Sparkles, Sun } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'

@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import ProjectDetailsPage from '@/pages/ProjectDetailsPage'
+import ProjectDetailsPage from '@/views/ProjectDetailsPage'
 import { serverApi } from '@/lib/serverApi'
 import { findProjectBySlug, toProjectSlug } from '@/utils/slugUtils'
 

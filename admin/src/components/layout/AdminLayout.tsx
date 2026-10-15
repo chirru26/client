@@ -22,13 +22,22 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const [isSearchOpen, setIsSearchOpen] = useState(false)
 
   useEffect(() => {
-    setToken(authStore.get())
+    const syncToken = () => setToken(authStore.get())
+    syncToken()
     setAuthReady(true)
 
-    const handleAuthChange = () => setToken(authStore.get())
-    window.addEventListener('auth-change', handleAuthChange)
-    return () => window.removeEventListener('auth-change', handleAuthChange)
-  }, [])
+    const handleSessionExpired = () => {
+      setToken(null)
+      if (window.location.pathname !== '/login') router.replace('/login')
+    }
+
+    window.addEventListener('auth-change', syncToken)
+    window.addEventListener('auth-expired', handleSessionExpired)
+    return () => {
+      window.removeEventListener('auth-change', syncToken)
+      window.removeEventListener('auth-expired', handleSessionExpired)
+    }
+  }, [router])
 
   useEffect(() => {
     if (!authReady || pathname === '/login') return
@@ -44,33 +53,34 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   }, [])
 
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
-        e.preventDefault()
-        setIsSearchOpen((prev) => !prev)
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
+        event.preventDefault()
+        setIsSearchOpen((previous) => !previous)
       }
+      if (event.key === 'Escape') setIsSearchOpen(false)
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [])
 
   if (pathname === '/login') return children
-
   if (!authReady || !token) return null
 
   async function handleLogout() {
     try {
       await auth.logout()
     } catch {
-      // Ignore network errors during logout.
+      // Clear the local session even when the API is unreachable.
+    } finally {
+      authStore.clear()
+      router.replace('/login')
     }
-    authStore.clear()
-    router.replace('/login')
   }
 
   const handleToggle = () => {
-    if (window.innerWidth <= 1024) setIsMobileOpen((prev) => !prev)
-    else setIsSidebarCollapsed((prev) => !prev)
+    if (window.innerWidth <= 1024) setIsMobileOpen((previous) => !previous)
+    else setIsSidebarCollapsed((previous) => !previous)
   }
 
   return (

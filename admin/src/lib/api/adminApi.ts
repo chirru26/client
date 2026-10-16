@@ -1,10 +1,9 @@
-import { request, API_URL } from './client'
-import { authStore } from '../auth/authStore'
+import { request } from './client'
 import type { JsonObject } from '@/types'
 
 export const adminApi = {
   dashboard: () => request('/admin/dashboard'),
-  profile: () => request('/admin/profile'),
+  profile: () => request<JsonObject>('/admin/profile'),
   saveProfile: (body: JsonObject) => request('/admin/profile', { method: 'PUT', body: JSON.stringify(body) }),
 
   projects: () => request('/admin/projects'),
@@ -39,18 +38,13 @@ export const adminApi = {
   mediaList: (folder?: string) => request(`/admin/media${folder ? `?folder=${encodeURIComponent(folder)}` : ''}`),
   recordMedia: (body: JsonObject) => request('/admin/media/record', { method: 'POST', body: JSON.stringify(body) }),
   deleteMediaRecord: (publicId: string) => request<null>(`/admin/media/record?publicId=${encodeURIComponent(publicId)}`, { method: 'DELETE' }),
-  uploadMedia: async (folder: string, file: File) => {
+  uploadMedia: (folder: string, file: File) => {
     const formData = new FormData()
     formData.append('file', file)
-    const token = authStore.get()
-    const response = await fetch(`${API_URL}/admin/media/${folder}`, {
+    return request(`/admin/media/${encodeURIComponent(folder)}`, {
       method: 'POST',
-      credentials: 'include',
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
       body: formData,
     })
-    if (!response.ok) throw new Error('Upload failed')
-    return response.json()
   },
   deleteMedia: (publicId: string, resourceType = 'image') => request<null>(`/admin/media?publicId=${encodeURIComponent(publicId)}&resourceType=${encodeURIComponent(resourceType)}`, { method: 'DELETE' }),
 

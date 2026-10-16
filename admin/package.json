@@ -14,7 +14,7 @@
     "@tanstack/react-query": "^5.102.8",
     "framer-motion": "^12.43.0",
     "lucide-react": "^0.468.0",
-    "next": "^16.3.6",
+    "next": "^16.3.8",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "react-hook-form": "^7.87.0",
@@ -30,6 +30,6 @@
     "postcss": "^8.5.30",
     "tailwindcss": "^4.3.3",
     "typescript": "^5.9.3",
-    "wrangler": "^4.0.0"
+    "wrangler": "^4.149.0"
   }
 }

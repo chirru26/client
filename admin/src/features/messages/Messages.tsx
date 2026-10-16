@@ -11,6 +11,7 @@ import {
 } from 'lucide-react'
 import { useState } from 'react'
 import { adminApi } from '@/lib/api'
+import QueryError from '@/components/ui/QueryError'
 
 export default function Messages() {
   const qc = useQueryClient()
@@ -26,6 +27,10 @@ export default function Messages() {
         <span>Loading inquiries & messages…</span>
       </div>
     )
+  }
+
+  if (q.isError && q.data === undefined) {
+    return <QueryError message={q.error instanceof Error ? q.error.message : 'Unable to load messages.'} onRetry={() => { void q.refetch() }} />
   }
 
   const messages = (q.data || []) as any[]

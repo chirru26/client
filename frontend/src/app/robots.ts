@@ -7,6 +7,6 @@ export default function robots(): MetadataRoute.Robots {
       allow: '/',
       disallow: ['/api/'],
     },
-    sitemap: 'https://www.chirru.in/sitemap.xml',
+    sitemap: 'https://chirru.in/sitemap.xml',
   }
 }

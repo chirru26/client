@@ -5,7 +5,6 @@ import {
   Globe,
   Mail,
   MapPin,
-  Phone,
   Save,
   Sparkles,
   UserRound,
@@ -39,6 +38,8 @@ export default function Profile() {
 
   useEffect(() => {
     if (q.data) {
+      // Populate the editable form when the asynchronous profile query resolves.
+      // oxlint-disable-next-line react/set-state-in-effect
       setForm((prev: any) => ({
         ...prev,
         ...q.data,

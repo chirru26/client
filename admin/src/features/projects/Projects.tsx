@@ -17,6 +17,7 @@ import { useState } from 'react'
 import { adminApi } from '@/lib/api'
 import CloudinaryUpload from '@/components/ui/CloudinaryUpload'
 import { getImageUrl } from '@/lib/utils/imageUtils'
+import QueryError from '@/components/ui/QueryError'
 
 export default function Projects() {
   const qc = useQueryClient()
@@ -46,6 +47,10 @@ export default function Projects() {
         <span>Loading projects…</span>
       </div>
     )
+  }
+
+  if (q.isError && q.data === undefined) {
+    return <QueryError message={q.error instanceof Error ? q.error.message : 'Unable to load projects.'} onRetry={() => { void q.refetch() }} />
   }
 
   const allSkills = (skillsQuery.data || []) as any[]

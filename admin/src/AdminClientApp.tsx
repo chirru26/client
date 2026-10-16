@@ -7,6 +7,16 @@ import AdminLayout from '@/components/layout/AdminLayout'
 interface AdminClientAppProps { children?: ReactNode }
 
 export default function AdminClientApp({ children }: AdminClientAppProps) {
-  const [queryClient] = useState(() => new QueryClient({ defaultOptions: { queries: { staleTime: 30_000, refetchOnWindowFocus: false } } }))
+  const [queryClient] = useState(() => new QueryClient({
+    defaultOptions: {
+      queries: {
+        staleTime: 30_000,
+        gcTime: 5 * 60_000,
+        retry: 1,
+        refetchOnWindowFocus: false,
+        refetchOnReconnect: true,
+      },
+    },
+  }))
   return <QueryClientProvider client={queryClient}><AdminLayout>{children}</AdminLayout></QueryClientProvider>
 }

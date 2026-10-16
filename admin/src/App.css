@@ -3726,3 +3726,74 @@
 
 
 
+
+
+/* Phase 5.3: navigation accessibility, session feedback, and reduced motion */
+.admin-auth-loading {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 24px;
+  color: var(--text-secondary, #52525b);
+  background: var(--bg-app, #fbf8ff);
+  font-size: 0.9rem;
+}
+
+.admin-auth-loading-spinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid var(--border-subtle, #e4e4e7);
+  border-top-color: var(--accent-amber, #d97706);
+  border-radius: 50%;
+  animation: admin-auth-spin 0.8s linear infinite;
+}
+
+@keyframes admin-auth-spin {
+  to { transform: rotate(360deg); }
+}
+
+.sidebar-backdrop {
+  padding: 0;
+  border: 0;
+  width: 100%;
+  cursor: pointer;
+}
+
+.sidebar-item:focus-visible,
+.sidebar-close-btn:focus-visible,
+.topheader-toggle-btn:focus-visible,
+.sidebar-backdrop:focus-visible {
+  outline: 3px solid var(--accent-amber, #d97706);
+  outline-offset: 3px;
+}
+
+@media (max-width: 480px) {
+  .sidebar {
+    width: min(86vw, 320px);
+    padding: 12px 10px;
+  }
+
+  .admin-topheader {
+    min-height: 56px;
+  }
+
+  .admin-content {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sidebar,
+  .admin-main,
+  .admin-topheader,
+  .sidebar-item,
+  .admin-auth-loading-spinner {
+    transition: none !important;
+    animation: none !important;
+    scroll-behavior: auto !important;
+  }
+}

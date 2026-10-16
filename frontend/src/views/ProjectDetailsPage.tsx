@@ -11,7 +11,7 @@ import type { Project } from '@/types/portfolio'
 
 export default function ProjectDetailsPage({ projects = [], slug }: { projects?: Project[]; slug: string }) {
     const project = findProjectBySlug(projects, slug)
-    if (!project) return <main style={{ paddingTop: '120px', minHeight: '80vh' }}><div className="container" style={{ textAlign: 'center', maxWidth: '600px' }}><h1 style={{ fontSize: '2rem', marginBottom: '16px', color: 'var(--text-primary)' }}>Project Not Found</h1><p style={{ color: 'var(--text-secondary)', marginBottom: '24px' }}>We couldn't locate any project matching &quot;{slug}&quot;.</p><Link href="/projects" className="btn btn-primary"><ArrowLeft size={16} /> Back to Projects</Link></div></main>
+    if (!project) return <main id="main-content" style={{ paddingTop: '120px', minHeight: '80vh' }}><div className="container" style={{ textAlign: 'center', maxWidth: '600px' }}><h1 style={{ fontSize: '2rem', marginBottom: '16px', color: 'var(--text-primary)' }}>Project Not Found</h1><p style={{ color: 'var(--text-secondary)', marginBottom: '24px' }}>We couldn't locate any project matching &quot;{slug}&quot;.</p><Link href="/projects" className="btn btn-primary"><ArrowLeft size={16} /> Back to Projects</Link></div></main>
     const imageUrl = getImageUrl(project.imageUrl)
     const liveUrl = getSafeExternalUrl(project.liveUrl)
     const githubUrl = getSafeExternalUrl(project.githubUrl)

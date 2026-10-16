@@ -9,7 +9,7 @@ import {
   Mail,
   Terminal,
 } from 'lucide-react'
-import { useState } from 'react'
+import { useState, type FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import { auth } from '@/lib/api'
 import { authStore } from '@/lib/auth'
@@ -22,18 +22,22 @@ export default function Login() {
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
 
-  async function handleSubmit(event: React.FormEvent) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
+    if (busy) return
+
     setBusy(true)
     setError('')
     try {
       const data = await auth.login(email.trim(), password)
-      if (data?.accessToken) {
-        authStore.set(data.accessToken)
+      if (!data?.accessToken) {
+        throw new Error('The server did not return an access token. Please check the authentication API response.')
       }
+
+      authStore.set(data.accessToken)
       router.replace('/')
-    } catch (e: any) {
-      setError(e.message || 'Invalid email or password. Please try again.')
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Unable to sign in. Please try again.')
     } finally {
       setBusy(false)
     }
@@ -62,12 +66,12 @@ export default function Login() {
               </div>
               <h1 className="login-title">CHIRRU</h1>
               <p className="login-subtitle">
-                Disciplined Portfolio Workbench & Engine
+                Disciplined Portfolio Workbench &amp; Engine
               </p>
             </div>
 
             {error && (
-              <div className="login-alert-error">
+              <div className="login-alert-error" role="alert" aria-live="polite">
                 <AlertCircle size={16} className="login-alert-icon" />
                 <span>{error}</span>
               </div>
@@ -82,11 +86,13 @@ export default function Login() {
                 id="login-email"
                 className="floating-input"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(event) => setEmail(event.target.value)}
                 type="email"
                 placeholder="Enter Email"
                 required
-                autoComplete="email"
+                autoComplete="username"
+                inputMode="email"
+                maxLength={254}
               />
             </div>
 
@@ -100,7 +106,7 @@ export default function Login() {
                   id="login-password"
                   className="floating-input"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(event) => setPassword(event.target.value)}
                   type={showPassword ? 'text' : 'password'}
                   placeholder="Enter Password"
                   required
@@ -109,7 +115,7 @@ export default function Login() {
                 <button
                   type="button"
                   className="floating-eye-btn"
-                  onClick={() => setShowPassword(!showPassword)}
+                  onClick={() => setShowPassword((previous) => !previous)}
                   aria-label={showPassword ? 'Hide password' : 'Show password'}
                 >
                   {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}

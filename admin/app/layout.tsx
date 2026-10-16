@@ -1,6 +1,8 @@
 import '../src/index.css'
 import '../src/App.css'
 
+// Next.js App Router requires metadata exports from layout/page modules.
+// oxlint-disable-next-line react/only-export-components
 export const metadata = {
   title: 'Chirru Admin',
 }

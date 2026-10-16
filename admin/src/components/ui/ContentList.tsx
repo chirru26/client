@@ -2,6 +2,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Plus, Search, Trash2 } from 'lucide-react'
 import { useState, type ComponentType, type FormEvent } from 'react'
 import CloudinaryUpload from './CloudinaryUpload'
+import QueryError from './QueryError'
 
 type Item = { id: string | number; name?: string; title?: string; position?: string; degree?: string; category?: string; company?: string; institution?: string; issuer?: string; organization?: string; issueDate?: string; year?: string | number; period?: string; date?: string; description?: string; [key: string]: unknown }
 type FormValue = string | number | boolean
@@ -42,6 +43,8 @@ export default function ContentList({
   const [search, setSearch] = useState('')
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
+  const [deletingId, setDeletingId] = useState<string | number | null>(null)
+  const [deleteError, setDeleteError] = useState('')
 
   if (q.isLoading)
     return (
@@ -72,13 +75,19 @@ export default function ContentList({
   }
 
   async function handleDelete(id: string | number, name: string) {
-    if (!deleteFn || !window.confirm(`Delete ${name ? `"${name}"` : 'this item'}?`)) return
+    if (!deleteFn || busy || deletingId !== null) return
+    if (!window.confirm(`Delete ${name ? `"${name}"` : 'this item'}? This action cannot be undone.`)) return
+
+    setDeleteError('')
+    setDeletingId(id)
     try {
       await deleteFn(id)
       await qc.invalidateQueries({ queryKey: [queryKey] })
       await qc.invalidateQueries({ queryKey: ['dashboard'] })
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Could not delete item.')
+      setDeleteError(err instanceof Error ? err.message : 'Could not delete item.')
+    } finally {
+      setDeletingId(null)
     }
   }
 
@@ -204,7 +213,10 @@ export default function ContentList({
               />
             </div>
           </div>
-          {filteredItems.length === 0 ? (
+          {deleteError && <div className="alert alert-error" role="alert">{deleteError}</div>}
+          {q.isError && q.data === undefined ? (
+            <QueryError message={q.error instanceof Error ? q.error.message : 'Unable to load records.'} onRetry={() => { void q.refetch() }} />
+          ) : filteredItems.length === 0 ? (
             <div className="empty-state">
               <div className="empty-state-icon">{Icon ? <Icon size={24} /> : null}</div>
               <p>No records registered yet.</p>
@@ -232,8 +244,10 @@ export default function ContentList({
                       <div className="data-row-actions">
                         <button
                           className="btn btn-danger btn-sm btn-icon"
-                          onClick={() => handleDelete(item.id, primary)}
-                          title="Delete item"
+                          onClick={() => void handleDelete(item.id, primary)}
+                          disabled={busy || deletingId !== null}
+                          aria-label={`Delete ${primary || 'item'}`}
+                          title={deletingId === item.id ? 'Deleting…' : 'Delete item'}
                         >
                           <Trash2 size={14} />
                         </button>

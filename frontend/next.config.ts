@@ -107,6 +107,8 @@ const nextConfig: NextConfig = {
   },
 
   images: {
+    // Cloudflare OpenNext removes sharp/@img in postbuild; keep the built-in optimizer disabled
+    // until an edge-compatible image loader is configured.
     unoptimized: true,
     remotePatterns,
   },

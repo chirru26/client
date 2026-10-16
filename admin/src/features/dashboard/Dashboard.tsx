@@ -6,8 +6,55 @@ import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { adminApi } from '@/lib/api'
 import { getImageUrl } from '@/lib/utils/imageUtils'
+import QueryError from '@/components/ui/QueryError'
 
 type RecordItem = Record<string, any>
+
+function DashboardClock() {
+  const [time, setTime] = useState(() => new Date())
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setTime(new Date()), 1000)
+    return () => window.clearInterval(timer)
+  }, [])
+
+  const formattedTime = time.toLocaleTimeString('en-GB', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })
+  const dayDateFormatted = time.toLocaleDateString('en-GB', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' })
+  const hourDeg = ((time.getHours() % 12) + time.getMinutes() / 60 + time.getSeconds() / 3600) * 30
+  const minuteDeg = (time.getMinutes() + time.getSeconds() / 60) * 6
+  const secondDeg = time.getSeconds() * 6
+
+  return (
+    <div className="executive-clock-station" aria-label={`Current time ${formattedTime}, ${dayDateFormatted}, India Standard Time`}>
+      <div className="clock-station-dial">
+        <svg viewBox="0 0 100 100" className="clock-dial-svg" aria-hidden="true">
+          <circle cx="50" cy="50" r="47" className="dial-rim" />
+          <circle cx="50" cy="50" r="43" className="dial-face" />
+          {Array.from({ length: 12 }).map((_, i) => {
+            const isMajor = i % 3 === 0
+            const rad = ((i * 30) - 90) * (Math.PI / 180)
+            const x1 = 50 + (isMajor ? 33 : 37) * Math.cos(rad)
+            const y1 = 50 + (isMajor ? 33 : 37) * Math.sin(rad)
+            const x2 = 50 + 42 * Math.cos(rad)
+            const y2 = 50 + 42 * Math.sin(rad)
+            return <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} className={isMajor ? 'dial-tick-major' : 'dial-tick-minor'} />
+          })}
+          <line x1="50" y1="50" x2={50 + 22 * Math.sin((hourDeg * Math.PI) / 180)} y2={50 - 22 * Math.cos((hourDeg * Math.PI) / 180)} className="dial-hand-hour" />
+          <line x1="50" y1="50" x2={50 + 31 * Math.sin((minuteDeg * Math.PI) / 180)} y2={50 - 31 * Math.cos((minuteDeg * Math.PI) / 180)} className="dial-hand-minute" />
+          <line x1={50 - 7 * Math.sin((secondDeg * Math.PI) / 180)} y1={50 + 7 * Math.cos((secondDeg * Math.PI) / 180)} x2={50 + 36 * Math.sin((secondDeg * Math.PI) / 180)} y2={50 - 36 * Math.cos((secondDeg * Math.PI) / 180)} className="dial-hand-second" />
+          <circle cx="50" cy="50" r="3" className="dial-center-cap" />
+          <circle cx="50" cy="1.2" r="1.2" className="dial-center-dot" />
+        </svg>
+      </div>
+      <div className="clock-station-data">
+        <div className="clock-station-badge"><span className="clock-station-pulse" /></div>
+        <div className="clock-station-time">{formattedTime}</div>
+        <div className="clock-station-date">{dayDateFormatted}</div>
+        <div className="clock-station-tz">IST · UTC+05:30</div>
+      </div>
+    </div>
+  )
+}
 
 export default function Dashboard() {
   const qc = useQueryClient()
@@ -18,9 +65,7 @@ export default function Dashboard() {
   const skillsQuery = useQuery({ queryKey: ['skills'], queryFn: adminApi.skills })
   const experienceQuery = useQuery({ queryKey: ['experience'], queryFn: adminApi.experience })
   const [savingOpenToWork, setSavingOpenToWork] = useState(false)
-  const [time, setTime] = useState(new Date())
-
-  useEffect(() => { const timer = setInterval(() => setTime(new Date()), 1000); return () => clearInterval(timer) }, [])
+  const [openToWorkError, setOpenToWorkError] = useState('')
 
   const d = (dashQuery.data || {}) as RecordItem
   const profile = (profileQuery.data || {}) as RecordItem
@@ -34,29 +79,38 @@ export default function Dashboard() {
   const projectsCount = Number(d.projects ?? projects.length)
   const skillsCount = Number(d.skills ?? skills.length)
   const experienceCount = Number(d.experience ?? experience.length)
-  const greeting = time.getHours() < 12 ? 'Good Morning' : time.getHours() < 18 ? 'Good Afternoon' : 'Good Evening'
-  const formattedTime = time.toLocaleTimeString('en-GB', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })
-  const dayDateFormatted = time.toLocaleDateString('en-GB', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' })
-  const hourDeg = ((time.getHours() % 12) + time.getMinutes() / 60 + time.getSeconds() / 3600) * 30
-  const minuteDeg = (time.getMinutes() + time.getSeconds() / 60) * 6
-  const secondDeg = time.getSeconds() * 6
+  const unreadCountDisplay = d.unreadMessages == null && messagesQuery.isPending ? '…' : unreadCount
+  const projectsCountDisplay = d.projects == null && projectsQuery.isPending ? '…' : projectsCount
+  const skillsCountDisplay = d.skills == null && skillsQuery.isPending ? '…' : skillsCount
+  const experienceCountDisplay = d.experience == null && experienceQuery.isPending ? '…' : experienceCount
+  const greetingHour = new Date().getHours()
+  const greeting = greetingHour < 12 ? 'Good Morning' : greetingHour < 18 ? 'Good Afternoon' : 'Good Evening'
 
   const toggleOpenToWork = async () => {
     if (profileQuery.isLoading) return
     setSavingOpenToWork(true)
-    try { await adminApi.saveProfile({ ...profile, openToWork: !profile.openToWork }); await qc.invalidateQueries({ queryKey: ['profile'] }) }
-    catch (err) { console.error('Failed to toggle openToWork:', err) }
-    finally { setSavingOpenToWork(false) }
+    setOpenToWorkError('')
+    try {
+      await adminApi.saveProfile({ ...profile, openToWork: !profile.openToWork })
+      await qc.invalidateQueries({ queryKey: ['profile'] })
+    } catch (err) {
+      setOpenToWorkError(err instanceof Error ? err.message : 'Could not update availability. Please try again.')
+    } finally {
+      setSavingOpenToWork(false)
+    }
   }
 
   const statCards = [
-    { title: 'TOTAL ACTIVE PROJECTS', value: projectsCount, sub: 'Featured & Public', desc: 'Java, Spring Boot, Microservices', tag: 'Showcase Works', href: '/projects', link: 'Directory →', icon: FolderKanban, tone: 'blue' },
-    { title: 'TECHNICAL SKILLS & TOOLS', value: skillsCount, sub: 'Active', desc: 'Backend, Cloud, DevOps Stack', tag: 'Active Stack', href: '/skills', link: 'Tech Stack →', icon: Wrench, tone: 'green' },
-    { title: 'UNREAD INQUIRIES', value: unreadCount, sub: unreadCount > 0 ? 'Urgent review' : 'All Clear', desc: 'Recruiter & Client messages', tag: unreadCount > 0 ? 'Pending' : 'Resolved', href: '/messages', link: 'Logs →', icon: Mail, tone: 'red' },
-    { title: 'RESUME & CAREER', value: `${experienceCount} Roles`, sub: 'Milestones', desc: 'Senior Backend Developer History', tag: 'Audience Network', href: '/experience', link: 'Details →', icon: BriefcaseBusiness, tone: 'emerald' },
+    { title: 'TOTAL ACTIVE PROJECTS', value: projectsCountDisplay, sub: 'Featured & Public', desc: 'Java, Spring Boot, Microservices', tag: 'Showcase Works', href: '/projects', link: 'Directory →', icon: FolderKanban, tone: 'blue' },
+    { title: 'TECHNICAL SKILLS & TOOLS', value: skillsCountDisplay, sub: 'Active', desc: 'Backend, Cloud, DevOps Stack', tag: 'Active Stack', href: '/skills', link: 'Tech Stack →', icon: Wrench, tone: 'green' },
+    { title: 'UNREAD INQUIRIES', value: unreadCountDisplay, sub: unreadCount > 0 ? 'Urgent review' : 'All Clear', desc: 'Recruiter & Client messages', tag: unreadCount > 0 ? 'Pending' : 'Resolved', href: '/messages', link: 'Logs →', icon: Mail, tone: 'red' },
+    { title: 'RESUME & CAREER', value: experienceCountDisplay === '…' ? '…' : `${experienceCount} Roles`, sub: 'Milestones', desc: 'Senior Backend Developer History', tag: 'Audience Network', href: '/experience', link: 'Details →', icon: BriefcaseBusiness, tone: 'emerald' },
   ]
 
+  const failedQueries = [dashQuery, profileQuery, projectsQuery, messagesQuery, skillsQuery, experienceQuery].filter((query) => query.isError)
+
   return <div className="dashboard-container">
+    {failedQueries.length > 0 && <QueryError message="Some dashboard data could not be loaded." onRetry={() => { for (const query of failedQueries) void query.refetch() }} /> }
     <div className="executive-hero">
       <div className="executive-hero-content">
         <div className="executive-hero-left">
@@ -82,10 +136,11 @@ export default function Dashboard() {
               <span className="opportunity-title">Available for Opportunities</span>
               <span className="opportunity-sub">Remote (Global) &amp; Advisory</span>
             </div>
-            <button type="button" role="switch" aria-checked={!!profile.openToWork} onClick={toggleOpenToWork} disabled={savingOpenToWork} className={`opportunity-switch ${profile.openToWork ? 'active' : ''}`}>
+            <button type="button" role="switch" aria-label="Availability for opportunities" aria-checked={!!profile.openToWork} onClick={toggleOpenToWork} disabled={savingOpenToWork} className={`opportunity-switch ${profile.openToWork ? 'active' : ''}`}>
               <span className="opportunity-switch-thumb" />
             </button>
           </div>
+          {openToWorkError && <p className="alert alert-error" role="alert">{openToWorkError}</p>}
           <Link href="/projects" className="hero-new-project-btn">
             <Plus size={18} />
             <span>New Project</span>
@@ -93,63 +148,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <div className="executive-clock-station">
-        <div className="clock-station-dial">
-          <svg viewBox="0 0 100 100" className="clock-dial-svg">
-            <circle cx="50" cy="50" r="47" className="dial-rim" />
-            <circle cx="50" cy="50" r="43" className="dial-face" />
-            {Array.from({ length: 12 }).map((_, i) => {
-              const isMajor = i % 3 === 0
-              const rad = ((i * 30) - 90) * (Math.PI / 180)
-              const x1 = 50 + (isMajor ? 33 : 37) * Math.cos(rad)
-              const y1 = 50 + (isMajor ? 33 : 37) * Math.sin(rad)
-              const x2 = 50 + 42 * Math.cos(rad)
-              const y2 = 50 + 42 * Math.sin(rad)
-              return (
-                <line
-                  key={i}
-                  x1={x1}
-                  y1={y1}
-                  x2={x2}
-                  y2={y2}
-                  className={isMajor ? 'dial-tick-major' : 'dial-tick-minor'}
-                />
-              )
-            })}
-            <line
-              x1="50"
-              y1="50"
-              x2={50 + 22 * Math.sin((hourDeg * Math.PI) / 180)}
-              y2={50 - 22 * Math.cos((hourDeg * Math.PI) / 180)}
-              className="dial-hand-hour"
-            />
-            <line
-              x1="50"
-              y1="50"
-              x2={50 + 31 * Math.sin((minuteDeg * Math.PI) / 180)}
-              y2={50 - 31 * Math.cos((minuteDeg * Math.PI) / 180)}
-              className="dial-hand-minute"
-            />
-            <line
-              x1={50 - 7 * Math.sin((secondDeg * Math.PI) / 180)}
-              y1={50 + 7 * Math.cos((secondDeg * Math.PI) / 180)}
-              x2={50 + 36 * Math.sin((secondDeg * Math.PI) / 180)}
-              y2={50 - 36 * Math.cos((secondDeg * Math.PI) / 180)}
-              className="dial-hand-second"
-            />
-            <circle cx="50" cy="50" r="3" className="dial-center-cap" />
-            <circle cx="50" cy="1.2" r="1.2" className="dial-center-dot" />
-          </svg>
-        </div>
-        <div className="clock-station-data">
-          <div className="clock-station-badge">
-            <span className="clock-station-pulse" />
-          </div>
-          <div className="clock-station-time">{formattedTime}</div>
-          <div className="clock-station-date">{dayDateFormatted}</div>
-          <div className="clock-station-tz">IST · UTC+05:30</div>
-        </div>
-      </div>
+      <DashboardClock />
     </div>
 
     <div className="stat-grid-4">
@@ -211,7 +210,9 @@ export default function Dashboard() {
         </Link>
       </div>
       <div className="featured-showcase-list">
-        {projects.length === 0 ? (
+        {projectsQuery.isPending ? (
+          <div style={{ padding: 16, textAlign: 'center', color: '#94a3b8', fontSize: '0.85rem' }} role="status">Loading projects…</div>
+        ) : projects.length === 0 ? (
           <div style={{ padding: 16, textAlign: 'center', color: '#94a3b8', fontSize: '0.85rem' }}>No projects added yet.</div>
         ) : (
           projects.slice(0, 3).map((project) => {

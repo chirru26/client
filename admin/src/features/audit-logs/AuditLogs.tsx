@@ -10,6 +10,7 @@ import {
 } from 'lucide-react'
 import { useState } from 'react'
 import { adminApi } from '@/lib/api'
+import QueryError from '@/components/ui/QueryError'
 
 function getActionBadge(action = '') {
   const act = action.toUpperCase()
@@ -109,6 +110,8 @@ export default function AuditLogs() {
             <div className="spinner" />
             <span>Loading audit records…</span>
           </div>
+        ) : query.isError && query.data === undefined ? (
+          <QueryError message={query.error instanceof Error ? query.error.message : 'Unable to load audit logs.'} onRetry={() => { void query.refetch() }} />
         ) : filteredLogs.length === 0 ? (
           <div className="empty-state">
             <ShieldCheck size={28} />

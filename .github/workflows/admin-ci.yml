@@ -1,0 +1,56 @@
+name: Admin CI
+
+on:
+  push:
+    branches:
+      - admin
+    paths:
+      - "admin/**"
+      - ".github/workflows/admin-ci.yml"
+  pull_request:
+    branches:
+      - admin
+    paths:
+      - "admin/**"
+      - ".github/workflows/admin-ci.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: admin-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    name: Typecheck, lint, build, and audit
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: admin
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: admin/package-lock.json
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: TypeScript typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Production build
+        run: npm run build
+
+      - name: Audit dependencies for high or critical vulnerabilities
+        run: npm audit --audit-level=high

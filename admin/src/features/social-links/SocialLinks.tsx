@@ -10,6 +10,7 @@ import {
 } from 'lucide-react'
 import { useState } from 'react'
 import { adminApi } from '@/lib/api'
+import QueryError from '@/components/ui/QueryError'
 
 const PLATFORM_PRESETS = [
   { platform: 'github', label: 'GitHub', placeholder: 'https://github.com/heychirru', icon: 'github' },
@@ -212,6 +213,8 @@ export default function SocialLinks() {
               <div className="spinner" />
               <span>Loading links…</span>
             </div>
+          ) : q.isError && q.data === undefined ? (
+            <QueryError message={q.error instanceof Error ? q.error.message : 'Unable to load social links.'} onRetry={() => { void q.refetch() }} />
           ) : items.length === 0 ? (
             <div className="empty-state">
               <Share2 size={26} />

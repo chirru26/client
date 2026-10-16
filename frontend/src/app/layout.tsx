@@ -20,28 +20,28 @@ const jetbrainsMono = JetBrains_Mono({
 
 
 export const metadata: Metadata = {
-    metadataBase: new URL('https://www.chirru.in'),
-    title: { default: 'Chiranjit Das', template: '%s | Chiranjit Das' },
+    metadataBase: new URL('https://chirru.in'),
+    title: { default: 'Chiranjit Das | Java & Backend Developer', template: '%s | Chiranjit Das' },
     description: 'Official portfolio of Chiranjit Das, Java & Backend Software Engineer specializing in Spring Boot, REST APIs, Microservices, and scalable web applications.',
     applicationName: 'Chiranjit Das Portfolio',
-    authors: [{ name: 'Chiranjit Das', url: 'https://www.chirru.in/' }],
+    authors: [{ name: 'Chiranjit Das', url: 'https://chirru.in/' }],
     creator: 'Chiranjit Das',
     publisher: 'Chiranjit Das',
-    alternates: { canonical: 'https://www.chirru.in/' },
+    alternates: { canonical: 'https://chirru.in/' },
     openGraph: {
         type: 'website',
         locale: 'en_IN',
-        url: 'https://www.chirru.in/',
+        url: 'https://chirru.in/',
         siteName: 'Chiranjit Das Portfolio',
         title: 'Chiranjit Das | Java & Backend Developer',
         description: 'Explore software architecture, featured projects, and backend engineering competencies by Chiranjit Das.',
-        images: [{ url: 'https://www.chirru.in/og-image.jpg', width: 1200, height: 630, type: 'image/jpeg', alt: 'Chiranjit Das portfolio' }]
+        images: [{ url: 'https://chirru.in/og-image.jpg', width: 1200, height: 630, type: 'image/jpeg', alt: 'Chiranjit Das portfolio' }]
     },
     twitter: {
         card: 'summary_large_image',
         title: 'Chiranjit Das | Java & Backend Developer',
         description: 'Explore software architecture, featured projects, and backend engineering competencies by Chiranjit Das.',
-        images: ['https://www.chirru.in/og-image.jpg']
+        images: ['https://chirru.in/og-image.jpg']
     },
     icons: {
         icon: [
@@ -88,6 +88,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
             </head>
             <body>
+                <a className="skip-link" href="#main-content">Skip to main content</a>
                 <SiteChrome profile={profile} socialLinks={socialLinks}>{children}</SiteChrome>
             </body>
         </html>

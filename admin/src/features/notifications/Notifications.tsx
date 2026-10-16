@@ -10,6 +10,7 @@ import {
 } from 'lucide-react'
 import { useState } from 'react'
 import { adminApi } from '@/lib/api'
+import QueryError from '@/components/ui/QueryError'
 
 export default function Notifications() {
   const qc = useQueryClient()
@@ -175,6 +176,8 @@ export default function Notifications() {
               <div className="spinner" />
               <span>Loading notifications…</span>
             </div>
+          ) : q.isError && q.data === undefined ? (
+            <QueryError message={q.error instanceof Error ? q.error.message : 'Unable to load notifications.'} onRetry={() => { void q.refetch() }} />
           ) : items.length === 0 ? (
             <div className="empty-state">
               <Bell size={26} />

@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { adminApi } from '@/lib/api'
 import { getImageUrl } from '@/lib/utils/imageUtils'
+import QueryError from '@/components/ui/QueryError'
 
 type RecordItem = Record<string, any>
 
@@ -56,7 +57,10 @@ export default function Dashboard() {
     { title: 'RESUME & CAREER', value: `${experienceCount} Roles`, sub: 'Milestones', desc: 'Senior Backend Developer History', tag: 'Audience Network', href: '/experience', link: 'Details →', icon: BriefcaseBusiness, tone: 'emerald' },
   ]
 
+  const failedQueries = [dashQuery, profileQuery, projectsQuery, messagesQuery, skillsQuery, experienceQuery].filter((query) => query.isError)
+
   return <div className="dashboard-container">
+    {failedQueries.length > 0 && <QueryError message="Some dashboard data could not be loaded." onRetry={() => { for (const query of failedQueries) void query.refetch() }} /> }
     <div className="executive-hero">
       <div className="executive-hero-content">
         <div className="executive-hero-left">

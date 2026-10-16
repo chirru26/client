@@ -2,6 +2,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Plus, Search, Trash2 } from 'lucide-react'
 import { useState, type ComponentType, type FormEvent } from 'react'
 import CloudinaryUpload from './CloudinaryUpload'
+import QueryError from './QueryError'
 
 type Item = { id: string | number; name?: string; title?: string; position?: string; degree?: string; category?: string; company?: string; institution?: string; issuer?: string; organization?: string; issueDate?: string; year?: string | number; period?: string; date?: string; description?: string; [key: string]: unknown }
 type FormValue = string | number | boolean
@@ -204,7 +205,9 @@ export default function ContentList({
               />
             </div>
           </div>
-          {filteredItems.length === 0 ? (
+          {q.isError && q.data === undefined ? (
+            <QueryError message={q.error instanceof Error ? q.error.message : 'Unable to load records.'} onRetry={() => { void q.refetch() }} />
+          ) : filteredItems.length === 0 ? (
             <div className="empty-state">
               <div className="empty-state-icon">{Icon ? <Icon size={24} /> : null}</div>
               <p>No records registered yet.</p>

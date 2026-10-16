@@ -79,6 +79,10 @@ export default function Dashboard() {
   const projectsCount = Number(d.projects ?? projects.length)
   const skillsCount = Number(d.skills ?? skills.length)
   const experienceCount = Number(d.experience ?? experience.length)
+  const unreadCountDisplay = d.unreadMessages == null && messagesQuery.isPending ? '…' : unreadCount
+  const projectsCountDisplay = d.projects == null && projectsQuery.isPending ? '…' : projectsCount
+  const skillsCountDisplay = d.skills == null && skillsQuery.isPending ? '…' : skillsCount
+  const experienceCountDisplay = d.experience == null && experienceQuery.isPending ? '…' : experienceCount
   const greetingHour = new Date().getHours()
   const greeting = greetingHour < 12 ? 'Good Morning' : greetingHour < 18 ? 'Good Afternoon' : 'Good Evening'
 
@@ -97,10 +101,10 @@ export default function Dashboard() {
   }
 
   const statCards = [
-    { title: 'TOTAL ACTIVE PROJECTS', value: projectsCount, sub: 'Featured & Public', desc: 'Java, Spring Boot, Microservices', tag: 'Showcase Works', href: '/projects', link: 'Directory →', icon: FolderKanban, tone: 'blue' },
-    { title: 'TECHNICAL SKILLS & TOOLS', value: skillsCount, sub: 'Active', desc: 'Backend, Cloud, DevOps Stack', tag: 'Active Stack', href: '/skills', link: 'Tech Stack →', icon: Wrench, tone: 'green' },
-    { title: 'UNREAD INQUIRIES', value: unreadCount, sub: unreadCount > 0 ? 'Urgent review' : 'All Clear', desc: 'Recruiter & Client messages', tag: unreadCount > 0 ? 'Pending' : 'Resolved', href: '/messages', link: 'Logs →', icon: Mail, tone: 'red' },
-    { title: 'RESUME & CAREER', value: `${experienceCount} Roles`, sub: 'Milestones', desc: 'Senior Backend Developer History', tag: 'Audience Network', href: '/experience', link: 'Details →', icon: BriefcaseBusiness, tone: 'emerald' },
+    { title: 'TOTAL ACTIVE PROJECTS', value: projectsCountDisplay, sub: 'Featured & Public', desc: 'Java, Spring Boot, Microservices', tag: 'Showcase Works', href: '/projects', link: 'Directory →', icon: FolderKanban, tone: 'blue' },
+    { title: 'TECHNICAL SKILLS & TOOLS', value: skillsCountDisplay, sub: 'Active', desc: 'Backend, Cloud, DevOps Stack', tag: 'Active Stack', href: '/skills', link: 'Tech Stack →', icon: Wrench, tone: 'green' },
+    { title: 'UNREAD INQUIRIES', value: unreadCountDisplay, sub: unreadCount > 0 ? 'Urgent review' : 'All Clear', desc: 'Recruiter & Client messages', tag: unreadCount > 0 ? 'Pending' : 'Resolved', href: '/messages', link: 'Logs →', icon: Mail, tone: 'red' },
+    { title: 'RESUME & CAREER', value: experienceCountDisplay === '…' ? '…' : `${experienceCount} Roles`, sub: 'Milestones', desc: 'Senior Backend Developer History', tag: 'Audience Network', href: '/experience', link: 'Details →', icon: BriefcaseBusiness, tone: 'emerald' },
   ]
 
   const failedQueries = [dashQuery, profileQuery, projectsQuery, messagesQuery, skillsQuery, experienceQuery].filter((query) => query.isError)
@@ -206,7 +210,9 @@ export default function Dashboard() {
         </Link>
       </div>
       <div className="featured-showcase-list">
-        {projects.length === 0 ? (
+        {projectsQuery.isPending ? (
+          <div style={{ padding: 16, textAlign: 'center', color: '#94a3b8', fontSize: '0.85rem' }} role="status">Loading projects…</div>
+        ) : projects.length === 0 ? (
           <div style={{ padding: 16, textAlign: 'center', color: '#94a3b8', fontSize: '0.85rem' }}>No projects added yet.</div>
         ) : (
           projects.slice(0, 3).map((project) => {

@@ -56,7 +56,7 @@ async function readErrorMessage(response: Response): Promise<string> {
   return message
 }
 
-export async function request<T = unknown>(
+async function requestOnce<T = unknown>(
   path: string,
   options: RequestOptions = {},
   retry = true,
@@ -104,4 +104,56 @@ export async function request<T = unknown>(
   const contentType = response.headers.get('content-type') || ''
   if (!contentType.includes('application/json')) return null as T
   return (await response.json()) as T
+}
+
+
+/**
+ * Coalesce concurrent identical GET requests at the transport layer.
+ * TanStack Query handles cache lifetimes; this map only exists while a
+ * request is in flight and never caches completed responses.
+ */
+const inFlightGetRequests = new Map<string, Promise<unknown>>()
+
+export function request<T = unknown>(
+  path: string,
+  options: RequestOptions = {},
+  retry = true,
+): Promise<T> {
+  const method = (options.method || 'GET').toUpperCase()
+
+  // Do not share mutation requests or requests with caller-owned cancellation.
+  if (method !== 'GET' || options.signal || options.body) {
+    return requestOnce<T>(path, options, retry)
+  }
+
+  const token = authStore.get()
+  const headers = new Headers(options.headers)
+  const headerKey = Array.from(headers.entries())
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([name, value]) => `${name.toLowerCase()}:${value}`)
+    .join('|')
+  const key = [
+    path,
+    token || '',
+    headerKey,
+    options.cache || '',
+    options.mode || '',
+    options.redirect || '',
+    options.referrerPolicy || '',
+  ].join('::')
+
+  const existing = inFlightGetRequests.get(key)
+  if (existing) return existing as Promise<T>
+
+  const pending = requestOnce<T>(path, options, retry)
+  inFlightGetRequests.set(key, pending)
+
+  const cleanup = () => {
+    if (inFlightGetRequests.get(key) === pending) {
+      inFlightGetRequests.delete(key)
+    }
+  }
+  void pending.then(cleanup, cleanup)
+
+  return pending
 }

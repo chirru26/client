@@ -24,6 +24,8 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   useEffect(() => {
     const syncToken = () => setToken(authStore.get())
     syncToken()
+    // Auth state must be read after hydration because sessionStorage is browser-only.
+    // oxlint-disable-next-line react/set-state-in-effect
     setAuthReady(true)
 
     const handleSessionExpired = () => {
@@ -85,7 +87,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
   return (
     <div className={`admin-shell ${isSidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
-      <GlobalSearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
+      <GlobalSearchModal key={isSearchOpen ? 'open' : 'closed'} isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
       <Sidebar
         isOpen={isMobileOpen}
         onToggle={handleToggle}

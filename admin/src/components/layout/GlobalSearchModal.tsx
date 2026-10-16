@@ -23,26 +23,32 @@ export default function GlobalSearchModal({ isOpen, onClose }: { isOpen: boolean
   const [query, setQuery] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
   useEffect(() => {
-    if (isOpen) setTimeout(() => inputRef.current?.focus(), 50)
-    else setQuery('')
+    if (isOpen) {
+      const timeoutId = window.setTimeout(() => inputRef.current?.focus(), 50)
+      return () => window.clearTimeout(timeoutId)
+    }
   }, [isOpen])
   const searchQuery = useQuery({ queryKey: ['global-search', query], queryFn: () => adminApi.search(query), enabled: query.trim().length >= 2 })
   if (!isOpen) return null
   const results = (searchQuery.data || []) as any[]
-  const handleSelect = (item: any) => {
+  const handleClose = () => {
+    setQuery('')
     onClose()
+  }
+  const handleSelect = (item: any) => {
+    handleClose()
     if (item.url) router.push(item.url)
     else if (item.type === 'project') router.push('/projects')
     else if (item.type === 'skill') router.push('/skills')
     else if (item.type === 'message') router.push('/messages')
     else router.push('/')
   }
-  return <div className="modal-backdrop" onClick={onClose} style={{ zIndex: 9999 }}>
+  return <div className="modal-backdrop" onClick={handleClose} style={{ zIndex: 9999 }}>
     <div className="modal-card" style={{ maxWidth: 620, padding: 0, borderRadius: 16, overflow: 'hidden', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.4)' }} onClick={(e) => e.stopPropagation()}>
       <div style={{ display: 'flex', alignItems: 'center', padding: '16px 20px', borderBottom: '1px solid var(--border-light)', gap: 12 }}>
         <Search size={20} color="var(--primary)" />
         <input ref={inputRef} className="form-input" placeholder="Search projects, skills, messages, logs... (Press Esc to exit)" value={query} onChange={(e) => setQuery(e.target.value)} style={{ border: 'none', background: 'transparent', fontSize: '1.05rem', boxShadow: 'none', padding: 0 }} />
-        <button type="button" className="btn btn-secondary btn-sm btn-icon" onClick={onClose}><X size={16} /></button>
+        <button type="button" className="btn btn-secondary btn-sm btn-icon" onClick={handleClose}><X size={16} /></button>
       </div>
       <div style={{ maxHeight: 380, overflowY: 'auto', padding: 12 }}>
         {query.trim().length < 2 ? <div style={{ padding: '28px 16px', textAlign: 'center', color: 'var(--text-tertiary)', fontSize: '.88rem' }}>Type 2 or more characters to search across everything in the portfolio CMS...</div>

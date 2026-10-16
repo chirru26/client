@@ -10,6 +10,52 @@ import QueryError from '@/components/ui/QueryError'
 
 type RecordItem = Record<string, any>
 
+function DashboardClock() {
+  const [time, setTime] = useState(() => new Date())
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setTime(new Date()), 1000)
+    return () => window.clearInterval(timer)
+  }, [])
+
+  const formattedTime = time.toLocaleTimeString('en-GB', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })
+  const dayDateFormatted = time.toLocaleDateString('en-GB', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' })
+  const hourDeg = ((time.getHours() % 12) + time.getMinutes() / 60 + time.getSeconds() / 3600) * 30
+  const minuteDeg = (time.getMinutes() + time.getSeconds() / 60) * 6
+  const secondDeg = time.getSeconds() * 6
+
+  return (
+    <div className="executive-clock-station" aria-label={`Current time ${formattedTime}, ${dayDateFormatted}, India Standard Time`}>
+      <div className="clock-station-dial">
+        <svg viewBox="0 0 100 100" className="clock-dial-svg" aria-hidden="true">
+          <circle cx="50" cy="50" r="47" className="dial-rim" />
+          <circle cx="50" cy="50" r="43" className="dial-face" />
+          {Array.from({ length: 12 }).map((_, i) => {
+            const isMajor = i % 3 === 0
+            const rad = ((i * 30) - 90) * (Math.PI / 180)
+            const x1 = 50 + (isMajor ? 33 : 37) * Math.cos(rad)
+            const y1 = 50 + (isMajor ? 33 : 37) * Math.sin(rad)
+            const x2 = 50 + 42 * Math.cos(rad)
+            const y2 = 50 + 42 * Math.sin(rad)
+            return <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} className={isMajor ? 'dial-tick-major' : 'dial-tick-minor'} />
+          })}
+          <line x1="50" y1="50" x2={50 + 22 * Math.sin((hourDeg * Math.PI) / 180)} y2={50 - 22 * Math.cos((hourDeg * Math.PI) / 180)} className="dial-hand-hour" />
+          <line x1="50" y1="50" x2={50 + 31 * Math.sin((minuteDeg * Math.PI) / 180)} y2={50 - 31 * Math.cos((minuteDeg * Math.PI) / 180)} className="dial-hand-minute" />
+          <line x1={50 - 7 * Math.sin((secondDeg * Math.PI) / 180)} y1={50 + 7 * Math.cos((secondDeg * Math.PI) / 180)} x2={50 + 36 * Math.sin((secondDeg * Math.PI) / 180)} y2={50 - 36 * Math.cos((secondDeg * Math.PI) / 180)} className="dial-hand-second" />
+          <circle cx="50" cy="50" r="3" className="dial-center-cap" />
+          <circle cx="50" cy="1.2" r="1.2" className="dial-center-dot" />
+        </svg>
+      </div>
+      <div className="clock-station-data">
+        <div className="clock-station-badge"><span className="clock-station-pulse" /></div>
+        <div className="clock-station-time">{formattedTime}</div>
+        <div className="clock-station-date">{dayDateFormatted}</div>
+        <div className="clock-station-tz">IST · UTC+05:30</div>
+      </div>
+    </div>
+  )
+}
+
 export default function Dashboard() {
   const qc = useQueryClient()
   const dashQuery = useQuery({ queryKey: ['dashboard'], queryFn: adminApi.dashboard })
@@ -19,9 +65,7 @@ export default function Dashboard() {
   const skillsQuery = useQuery({ queryKey: ['skills'], queryFn: adminApi.skills })
   const experienceQuery = useQuery({ queryKey: ['experience'], queryFn: adminApi.experience })
   const [savingOpenToWork, setSavingOpenToWork] = useState(false)
-  const [time, setTime] = useState(new Date())
-
-  useEffect(() => { const timer = setInterval(() => setTime(new Date()), 1000); return () => clearInterval(timer) }, [])
+  const [openToWorkError, setOpenToWorkError] = useState('')
 
   const d = (dashQuery.data || {}) as RecordItem
   const profile = (profileQuery.data || {}) as RecordItem
@@ -35,19 +79,21 @@ export default function Dashboard() {
   const projectsCount = Number(d.projects ?? projects.length)
   const skillsCount = Number(d.skills ?? skills.length)
   const experienceCount = Number(d.experience ?? experience.length)
-  const greeting = time.getHours() < 12 ? 'Good Morning' : time.getHours() < 18 ? 'Good Afternoon' : 'Good Evening'
-  const formattedTime = time.toLocaleTimeString('en-GB', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })
-  const dayDateFormatted = time.toLocaleDateString('en-GB', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' })
-  const hourDeg = ((time.getHours() % 12) + time.getMinutes() / 60 + time.getSeconds() / 3600) * 30
-  const minuteDeg = (time.getMinutes() + time.getSeconds() / 60) * 6
-  const secondDeg = time.getSeconds() * 6
+  const greetingHour = new Date().getHours()
+  const greeting = greetingHour < 12 ? 'Good Morning' : greetingHour < 18 ? 'Good Afternoon' : 'Good Evening'
 
   const toggleOpenToWork = async () => {
     if (profileQuery.isLoading) return
     setSavingOpenToWork(true)
-    try { await adminApi.saveProfile({ ...profile, openToWork: !profile.openToWork }); await qc.invalidateQueries({ queryKey: ['profile'] }) }
-    catch (err) { console.error('Failed to toggle openToWork:', err) }
-    finally { setSavingOpenToWork(false) }
+    setOpenToWorkError('')
+    try {
+      await adminApi.saveProfile({ ...profile, openToWork: !profile.openToWork })
+      await qc.invalidateQueries({ queryKey: ['profile'] })
+    } catch (err) {
+      setOpenToWorkError(err instanceof Error ? err.message : 'Could not update availability. Please try again.')
+    } finally {
+      setSavingOpenToWork(false)
+    }
   }
 
   const statCards = [
@@ -86,10 +132,11 @@ export default function Dashboard() {
               <span className="opportunity-title">Available for Opportunities</span>
               <span className="opportunity-sub">Remote (Global) &amp; Advisory</span>
             </div>
-            <button type="button" role="switch" aria-checked={!!profile.openToWork} onClick={toggleOpenToWork} disabled={savingOpenToWork} className={`opportunity-switch ${profile.openToWork ? 'active' : ''}`}>
+            <button type="button" role="switch" aria-label="Availability for opportunities" aria-checked={!!profile.openToWork} onClick={toggleOpenToWork} disabled={savingOpenToWork} className={`opportunity-switch ${profile.openToWork ? 'active' : ''}`}>
               <span className="opportunity-switch-thumb" />
             </button>
           </div>
+          {openToWorkError && <p className="alert alert-error" role="alert">{openToWorkError}</p>}
           <Link href="/projects" className="hero-new-project-btn">
             <Plus size={18} />
             <span>New Project</span>
@@ -97,63 +144,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <div className="executive-clock-station">
-        <div className="clock-station-dial">
-          <svg viewBox="0 0 100 100" className="clock-dial-svg">
-            <circle cx="50" cy="50" r="47" className="dial-rim" />
-            <circle cx="50" cy="50" r="43" className="dial-face" />
-            {Array.from({ length: 12 }).map((_, i) => {
-              const isMajor = i % 3 === 0
-              const rad = ((i * 30) - 90) * (Math.PI / 180)
-              const x1 = 50 + (isMajor ? 33 : 37) * Math.cos(rad)
-              const y1 = 50 + (isMajor ? 33 : 37) * Math.sin(rad)
-              const x2 = 50 + 42 * Math.cos(rad)
-              const y2 = 50 + 42 * Math.sin(rad)
-              return (
-                <line
-                  key={i}
-                  x1={x1}
-                  y1={y1}
-                  x2={x2}
-                  y2={y2}
-                  className={isMajor ? 'dial-tick-major' : 'dial-tick-minor'}
-                />
-              )
-            })}
-            <line
-              x1="50"
-              y1="50"
-              x2={50 + 22 * Math.sin((hourDeg * Math.PI) / 180)}
-              y2={50 - 22 * Math.cos((hourDeg * Math.PI) / 180)}
-              className="dial-hand-hour"
-            />
-            <line
-              x1="50"
-              y1="50"
-              x2={50 + 31 * Math.sin((minuteDeg * Math.PI) / 180)}
-              y2={50 - 31 * Math.cos((minuteDeg * Math.PI) / 180)}
-              className="dial-hand-minute"
-            />
-            <line
-              x1={50 - 7 * Math.sin((secondDeg * Math.PI) / 180)}
-              y1={50 + 7 * Math.cos((secondDeg * Math.PI) / 180)}
-              x2={50 + 36 * Math.sin((secondDeg * Math.PI) / 180)}
-              y2={50 - 36 * Math.cos((secondDeg * Math.PI) / 180)}
-              className="dial-hand-second"
-            />
-            <circle cx="50" cy="50" r="3" className="dial-center-cap" />
-            <circle cx="50" cy="1.2" r="1.2" className="dial-center-dot" />
-          </svg>
-        </div>
-        <div className="clock-station-data">
-          <div className="clock-station-badge">
-            <span className="clock-station-pulse" />
-          </div>
-          <div className="clock-station-time">{formattedTime}</div>
-          <div className="clock-station-date">{dayDateFormatted}</div>
-          <div className="clock-station-tz">IST · UTC+05:30</div>
-        </div>
-      </div>
+      <DashboardClock />
     </div>
 
     <div className="stat-grid-4">

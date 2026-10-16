@@ -21,7 +21,7 @@ const jetbrainsMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
     metadataBase: new URL('https://chirru.in'),
-    title: { default: 'Chiranjit Das', template: '%s | Chiranjit Das' },
+    title: { default: 'Chiranjit Das | Java & Backend Developer', template: '%s | Chiranjit Das' },
     description: 'Official portfolio of Chiranjit Das, Java & Backend Software Engineer specializing in Spring Boot, REST APIs, Microservices, and scalable web applications.',
     applicationName: 'Chiranjit Das Portfolio',
     authors: [{ name: 'Chiranjit Das', url: 'https://chirru.in/' }],
@@ -88,6 +88,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
             </head>
             <body>
+                <a className="skip-link" href="#main-content">Skip to main content</a>
                 <SiteChrome profile={profile} socialLinks={socialLinks}>{children}</SiteChrome>
             </body>
         </html>

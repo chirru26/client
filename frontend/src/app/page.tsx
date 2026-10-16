@@ -4,7 +4,7 @@ import { getPortfolioData } from '@/lib/serverApi'
 export const revalidate = 1800
 
 export const metadata: Metadata = {
-  title: 'Chiranjit Das | Java & Backend Developer',
+  title: { absolute: 'Chiranjit Das | Java & Backend Developer' },
   description:
     'Official portfolio of Chiranjit Das, Java & Backend Software Engineer specializing in Spring Boot, REST APIs, Microservices, and scalable web applications.',
   alternates: { canonical: '/' },

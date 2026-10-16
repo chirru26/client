@@ -2685,3 +2685,25 @@ body {
   max-width: 100vw;
   width: 100%;
 }
+
+/* Keyboard users can bypass repeated site navigation. */
+.skip-link {
+  position: fixed;
+  z-index: 10000;
+  top: 0.75rem;
+  left: 0.75rem;
+  transform: translateY(calc(-100% - 1rem));
+  padding: 0.75rem 1rem;
+  border: 2px solid var(--primary-deep);
+  border-radius: var(--radius-md);
+  background: var(--bg-surface-container-lowest);
+  color: var(--text-primary);
+  font-weight: 700;
+  box-shadow: var(--shadow-outset-sm);
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+  outline: 3px solid var(--primary);
+  outline-offset: 3px;
+}

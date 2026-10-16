@@ -22,7 +22,12 @@ export function findProjectBySlug(
 ): Project | null {
   if (!slugOrId || !Array.isArray(projects)) return null
 
-  const target = decodeURIComponent(slugOrId).toLowerCase().trim()
+  let target: string
+  try {
+    target = decodeURIComponent(slugOrId).toLowerCase().trim()
+  } catch {
+    return null
+  }
 
   return (
     projects.find((project) => {

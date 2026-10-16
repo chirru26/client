@@ -5,7 +5,6 @@ import {
   Globe,
   Mail,
   MapPin,
-  Phone,
   Save,
   Sparkles,
   UserRound,

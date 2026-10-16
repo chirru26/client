@@ -4,7 +4,7 @@ import type { JsonObject } from '@/types'
 
 export const adminApi = {
   dashboard: () => request('/admin/dashboard'),
-  profile: () => request('/admin/profile'),
+  profile: () => request<JsonObject>('/admin/profile'),
   saveProfile: (body: JsonObject) => request('/admin/profile', { method: 'PUT', body: JSON.stringify(body) }),
 
   projects: () => request('/admin/projects'),

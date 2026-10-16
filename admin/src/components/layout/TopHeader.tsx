@@ -27,6 +27,7 @@ export default function TopHeader({ onToggleSidebar, onOpenSearch }: TopHeaderPr
           className="btn btn-secondary btn-sm btn-icon topheader-toggle-btn"
           onClick={onToggleSidebar}
           aria-label="Toggle navigation"
+          aria-controls="admin-sidebar"
           title="Toggle Sidebar"
         >
           <Menu size={18} />

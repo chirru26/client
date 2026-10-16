@@ -55,19 +55,39 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   }, [])
 
   useEffect(() => {
+    if (!isMobileOpen || window.innerWidth > 1024) return
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = previousOverflow
+    }
+  }, [isMobileOpen])
+
+  useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
         event.preventDefault()
         setIsSearchOpen((previous) => !previous)
       }
-      if (event.key === 'Escape') setIsSearchOpen(false)
+      if (event.key === 'Escape') {
+        setIsSearchOpen(false)
+        setIsMobileOpen(false)
+      }
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [])
 
   if (pathname === '/login') return children
-  if (!authReady || !token) return null
+  if (!authReady) {
+    return (
+      <div className="admin-auth-loading" role="status" aria-live="polite">
+        <span className="admin-auth-loading-spinner" aria-hidden="true" />
+        <span>Restoring your admin session…</span>
+      </div>
+    )
+  }
+  if (!token) return null
 
   async function handleLogout() {
     try {

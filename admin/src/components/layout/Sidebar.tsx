@@ -66,8 +66,8 @@ export default function Sidebar({ isOpen, onToggle, onClose, onLogout }: Sidebar
 
   return (
     <>
-      {isOpen && <div className="sidebar-backdrop" onClick={handleClose} />}
-      <aside className={`sidebar ${isOpen ? 'mobile-open' : ''}`} aria-label="Sidebar Navigation">
+      {isOpen && <button type="button" className="sidebar-backdrop" onClick={handleClose} aria-label="Close navigation menu" />}
+      <aside id="admin-sidebar" className={`sidebar ${isOpen ? 'mobile-open' : ''}`} aria-label="Sidebar Navigation">
         <div className="sidebar-header">
           <div className="sidebar-user-block">
             <div className="sidebar-brand-avatar">
@@ -110,6 +110,7 @@ export default function Sidebar({ isOpen, onToggle, onClose, onLogout }: Sidebar
                     key={to}
                     href={to}
                     className={`sidebar-item ${isActive ? 'active' : ''}`}
+                    aria-current={isActive ? 'page' : undefined}
                     onClick={() => window.innerWidth <= 1024 && handleClose()}
                   >
                     <div className="sidebar-item-content">

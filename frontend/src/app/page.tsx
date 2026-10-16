@@ -10,14 +10,14 @@ export const metadata: Metadata = {
   alternates: { canonical: '/' },
   openGraph: {
     type: 'website',
-    url: 'https://www.chirru.in/',
+    url: 'https://chirru.in/',
     siteName: 'Chiranjit Das Portfolio',
     title: 'Chiranjit Das | Java & Backend Developer',
     description:
       'Explore software architecture, featured projects, and backend engineering competencies by Chiranjit Das.',
     images: [
       {
-        url: 'https://www.chirru.in/og-image.jpg',
+        url: 'https://chirru.in/og-image.jpg',
         width: 1200,
         height: 630,
         type: 'image/jpeg',
